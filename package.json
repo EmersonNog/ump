@@ -1,0 +1,38 @@
+{
+  "name": "ump-pagamentos",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "icones": "node scripts/gerar-icones.mjs",
+    "db:iniciar": "supabase start",
+    "db:tipos": "supabase gen types typescript > src/lib/supabase/types.ts"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.81.0",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "web-push": "^4.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "sharp": "^0.35.5",
+    "supabase": "^3.4.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/* Identidade inspirada na Igreja Presbiteriana do Brasil: verde da sarça + dourado da chama. */
+@theme {
+  --color-brand-50: #eef6f1;
+  --color-brand-100: #d5eadc;
+  --color-brand-200: #a9d3b8;
+  --color-brand-300: #74b58e;
+  --color-brand-400: #439a68;
+  --color-brand-500: #2a8257;
+  --color-brand-600: #1d6b45;
+  --color-brand-700: #155637;
+  --color-brand-800: #10432b;
+  --color-brand-900: #0b3220;
+  --color-brand-950: #061d12;
+
+  --color-ouro-300: #f0d48a;
+  --color-ouro-400: #e0b84b;
+  --color-ouro-500: #c99a2e;
+  --color-ouro-600: #a67b1f;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-lora), ui-serif, Georgia, serif;
+
+  --animate-entrar: entrar 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @keyframes entrar {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@theme inline {
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-texto: var(--texto);
+  --color-suave: var(--suave);
+  --color-borda: var(--borda);
+}
+
+:root {
+  --fundo: #f4f7f5;
+  --superficie: #ffffff;
+  --texto: #10231a;
+  --suave: #5b6e64;
+  --borda: #dfe7e2;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #07130d;
+    --superficie: #0e1f17;
+    --texto: #e8f1ec;
+    --suave: #93a89c;
+    --borda: #1e3328;
+    color-scheme: dark;
+  }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  overscroll-behavior-y: none;
+}
+
+/* Áreas seguras (notch / barra de gestos) quando instalado. */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (display-mode: standalone) {
+  body {
+    user-select: none;
+  }
+  input,
+  textarea,
+  [data-selecionavel] {
+    user-select: text;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
