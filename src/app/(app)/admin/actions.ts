@@ -6,7 +6,6 @@ import { exigirAdmin } from "@/lib/auth";
 import { tituloCobranca } from "@/lib/cobrancas";
 import { lerValor, moeda } from "@/lib/format";
 import { notificar } from "@/lib/push";
-import { lerPixCopiaECola } from "@/lib/pix";
 
 export type Resultado = { erro?: string; sucesso?: string };
 
@@ -150,32 +149,4 @@ export async function atualizarMembro(
   }
   revalidatePath("/admin/membros");
   return { sucesso: "Membro atualizado." };
-}
-
-export async function salvarConfiguracoes(_: Resultado, form: FormData): Promise<Resultado> {
-  const { supabase } = await exigirAdmin();
-  const campo = (nome: string) => String(form.get(nome) ?? "").trim() || null;
-
-  // Aceita o código colado com quebras de linha ou espaços nas pontas.
-  const copiaECola = campo("pix_copia_cola")?.replace(/[\r\n]/g, "") ?? null;
-  const dadosPix = copiaECola ? lerPixCopiaECola(copiaECola) : null;
-  if (copiaECola && !dadosPix) {
-    return { erro: "Código Pix copia e cola inválido. Copie novamente do app do banco, sem alterar nada." };
-  }
-
-  const { error } = await supabase
-    .from("configuracoes")
-    .update({
-      pix_copia_cola: copiaECola,
-      // Sem chave/favorecido informados, usa os que estão dentro do código Pix.
-      chave_pix: campo("chave_pix") ?? dadosPix?.chave ?? null,
-      favorecido: campo("favorecido") ?? dadosPix?.nome ?? null,
-      instrucoes: campo("instrucoes"),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", 1);
-  if (error) return { erro: "Não foi possível salvar." };
-
-  revalidatePath("/", "layout");
-  return { sucesso: "Dados de pagamento salvos." };
 }

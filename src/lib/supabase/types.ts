@@ -37,20 +37,6 @@ export type Database = {
                   Relationships: [
                     
                   ]
-                },"configuracoes": {
-                  Row: {
-                    "chave_pix": string | null,"favorecido": string | null,"id": number,"instrucoes": string | null,"pix_copia_cola": string | null,"updated_at": string
-                  }
-                  ComputedFields: never
-                  Insert: {
-                    "chave_pix"?: string | null,"favorecido"?: string | null,"id"?: number,"instrucoes"?: string | null,"pix_copia_cola"?: string | null,"updated_at"?: string
-                  }
-                  Update: {
-                    "chave_pix"?: string | null,"favorecido"?: string | null,"id"?: number,"instrucoes"?: string | null,"pix_copia_cola"?: string | null,"updated_at"?: string
-                  }
-                  Relationships: [
-                    
-                  ]
                 },"pagamentos": {
                   Row: {
                     "cobranca_id": string,"comprovante_path": string,"created_at": string,"data_pagamento": string,"id": string,"membro_id": string,"motivo": string | null,"observacao": string | null,"revisado_em": string | null,"revisado_por": string | null,"status": Database["public"]['Enums']["pagamento_status"],"valor": number

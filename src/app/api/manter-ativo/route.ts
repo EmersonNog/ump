@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ erro: "não autorizado" }, { status: 401 });
   }
 
-  const { error } = await createServiceClient().from("configuracoes").select("id").limit(1);
+  const { error } = await createServiceClient().from("cobrancas").select("id").limit(1);
   if (error) {
     console.error("[manter-ativo] falha ao consultar o banco", error);
     return NextResponse.json({ ok: false }, { status: 500 });

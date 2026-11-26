@@ -9,7 +9,7 @@ import { situacaoPorCobranca, tituloCobranca } from "@/lib/cobrancas";
 import { data, hojeISO, moeda } from "@/lib/format";
 import { FormComprovante } from "./form-comprovante";
 import { QrPix } from "@/components/qr-pix";
-import { pixComValor } from "@/lib/pix";
+import { pixComValor, pixUmp } from "@/lib/pix";
 
 export const metadata: Metadata = { title: "Informar pagamento" };
 
@@ -17,18 +17,16 @@ export default async function PaginaPagar({ params }: PageProps<"/pagar/[id]">) 
   const { id } = await params;
   const { supabase, perfil } = await exigirSessao();
 
-  const [{ data: cobranca }, { data: pagamentos }, { data: config }] = await Promise.all([
+  const [{ data: cobranca }, { data: pagamentos }] = await Promise.all([
     supabase.from("cobrancas").select("*").eq("id", id).eq("ativa", true).maybeSingle(),
     supabase.from("pagamentos").select("*").eq("cobranca_id", id).eq("membro_id", perfil.id),
-    supabase.from("configuracoes").select("chave_pix, favorecido, pix_copia_cola").single(),
   ]);
   if (!cobranca) notFound();
 
   const [{ situacao, pagamento }] = situacaoPorCobranca([cobranca], pagamentos ?? []);
   if (situacao === "pago" || situacao === "em_analise") redirect("/historico");
 
-  const codigoComValor = config?.pix_copia_cola ? pixComValor(config.pix_copia_cola, Number(cobranca.valor)) : null;
-  const temPix = Boolean(codigoComValor || config?.chave_pix);
+  const codigoComValor = pixComValor(Number(cobranca.valor));
 
   return (
     <div className="mx-auto max-w-lg">
@@ -62,43 +60,35 @@ export default async function PaginaPagar({ params }: PageProps<"/pagar/[id]">) 
         </div>
       )}
 
-      {temPix && (
-        <section className="mb-5">
-          <h2 className="mb-3 font-serif text-lg font-semibold">1. Pague via Pix</h2>
-          <Cartao className="space-y-4">
-            {codigoComValor && (
-              <div className="flex flex-col-reverse items-center gap-4 sm:flex-row">
-                <QrPix
-                  codigo={codigoComValor}
-                  className="w-52 shrink-0 overflow-hidden rounded-xl border border-borda bg-white p-1.5 [&_svg]:h-auto [&_svg]:w-full"
-                />
-                <div className="w-full space-y-3 text-center sm:text-left">
-                  <p className="text-sm">
-                    Use o <strong>Pix copia e cola</strong> no app do seu banco ou escaneie o QR Code. O valor de{" "}
-                    <strong>{moeda(cobranca.valor)}</strong> já vem preenchido.
-                  </p>
-                  <CopiarPix texto={codigoComValor} rotulo="Copiar Pix copia e cola" grande />
-                </div>
-              </div>
-            )}
-            {config?.chave_pix && (
-              <div className={codigoComValor ? "flex items-center gap-3 border-t border-borda pt-4" : "flex items-center gap-3"}>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-suave">Chave Pix{config.favorecido ? ` · ${config.favorecido}` : ""}</p>
-                  <p data-selecionavel className="truncate font-mono text-sm font-semibold">
-                    {config.chave_pix}
-                  </p>
-                </div>
-                <CopiarPix texto={config.chave_pix} />
-              </div>
-            )}
-          </Cartao>
-        </section>
-      )}
+      <section className="mb-5">
+        <h2 className="mb-3 font-serif text-lg font-semibold">1. Pague via Pix</h2>
+        <Cartao className="space-y-4">
+          <div className="flex flex-col-reverse items-center gap-4 sm:flex-row">
+            <QrPix
+              codigo={codigoComValor}
+              className="w-52 shrink-0 overflow-hidden rounded-xl border border-borda bg-white p-1.5 [&_svg]:h-auto [&_svg]:w-full"
+            />
+            <div className="w-full space-y-3 text-center sm:text-left">
+              <p className="text-sm">
+                Use o <strong>Pix copia e cola</strong> no app do seu banco ou escaneie o QR Code. O valor de{" "}
+                <strong>{moeda(cobranca.valor)}</strong> já vem preenchido.
+              </p>
+              <CopiarPix texto={codigoComValor} rotulo="Copiar Pix copia e cola" grande />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 border-t border-borda pt-4">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs text-suave">Chave Pix · {pixUmp.favorecido}</p>
+              <p data-selecionavel className="truncate font-mono text-sm font-semibold">
+                {pixUmp.chave}
+              </p>
+            </div>
+            <CopiarPix texto={pixUmp.chave} />
+          </div>
+        </Cartao>
+      </section>
 
-      <h2 className="mb-3 font-serif text-lg font-semibold">
-        {temPix ? "2. " : ""}Envie o comprovante
-      </h2>
+      <h2 className="mb-3 font-serif text-lg font-semibold">2. Envie o comprovante</h2>
       <FormComprovante
         cobrancaId={cobranca.id}
         membroId={perfil.id}

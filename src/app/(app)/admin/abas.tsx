@@ -8,7 +8,6 @@ const ABAS = [
   { href: "/admin", rotulo: "Comprovantes" },
   { href: "/admin/cobrancas", rotulo: "Cobranças" },
   { href: "/admin/membros", rotulo: "Membros" },
-  { href: "/admin/configuracoes", rotulo: "PIX" },
 ];
 
 export function AbasAdmin() {

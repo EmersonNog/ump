@@ -11,14 +11,15 @@ Tudo cabe nos planos gratuitos: Supabase Free, Vercel Hobby e Web Push sem nenhu
 | Membro | Diretoria (admin) |
 | --- | --- |
 | Cadastro/login, recuperação de senha | Fila de comprovantes em análise, com contador |
-| Total em aberto, chave PIX com botão "Copiar" | Conferir comprovante (imagem/PDF), marcar **Pago**, **Não pago** (com motivo) ou voltar para análise |
+| Total em aberto, chave Pix com botão "Copiar" | Conferir comprovante (imagem/PDF), marcar **Pago**, **Não pago** (com motivo) ou voltar para análise |
 | Informar pagamento: foto/print/PDF (fotos são comprimidas no aparelho) | Criar eventos e gerar as 12 mensalidades do ano |
 | Histórico com status e motivo de recusa; reenviar quando "não pago" | Situação de cada membro por cobrança (quem falta pagar) |
-| Notificações quando o pagamento é conferido | Promover admins, desativar membros, configurar PIX |
+| Pix copia e cola e QR Code com o valor de cada cobrança já preenchido | Promover admins, desativar membros |
 
 - **O primeiro usuário cadastrado vira administrador automaticamente.**
 - As mensalidades contam a partir do mês em que o membro se cadastrou.
-- A segurança fica no banco (RLS): o membro só vê os próprios pagamentos e comprovantes e não consegue alterar status, cobranças, PIX nem o próprio papel.
+- A segurança fica no banco (RLS): o membro só vê os próprios pagamentos e comprovantes e não consegue alterar status, cobranças nem o próprio papel.
+- O Pix da UMP é fixo, definido em `src/lib/pix.ts` (`PIX_UMP`). Para trocar de conta, substitua o código copia e cola ali e publique. Se o código estiver inválido, o build falha em vez de publicar um Pix errado.
 
 ## Rodar localmente
 
@@ -77,7 +78,8 @@ src/proxy.ts              sessão Supabase + proteção de rotas
 src/lib/                  clientes Supabase, push, formatação, regras de cobrança
 src/app/(auth)/           entrar, cadastrar, recuperar e nova senha
 src/app/(app)/            início, pagar, histórico, perfil
-src/app/(app)/admin/      comprovantes, cobranças, membros, PIX
+src/app/(app)/admin/      comprovantes, cobranças, membros
+src/lib/pix.ts            Pix fixo da UMP + geração do copia e cola com valor
 ```
 
 Depois de alterar o banco, crie uma nova migration em `supabase/migrations/` e rode `npm run db:tipos`.

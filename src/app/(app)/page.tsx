@@ -6,12 +6,13 @@ import { Aviso, Cartao, Selo, Vazio, cx } from "@/components/ui";
 import { exigirSessao } from "@/lib/auth";
 import { situacaoPorCobranca, tituloCobranca, type Cobranca, type ItemCobranca } from "@/lib/cobrancas";
 import { data, hojeISO, moeda, primeiroDiaDoMes } from "@/lib/format";
+import { pixUmp } from "@/lib/pix";
 
 export default async function PaginaInicio({ searchParams }: PageProps<"/">) {
   const { senha, enviado } = await searchParams;
   const { supabase, perfil } = await exigirSessao();
 
-  const [{ data: cobrancas }, { data: pagamentos }, { data: config }] = await Promise.all([
+  const [{ data: cobrancas }, { data: pagamentos }] = await Promise.all([
     supabase
       .from("cobrancas")
       .select("*")
@@ -19,7 +20,6 @@ export default async function PaginaInicio({ searchParams }: PageProps<"/">) {
       .order("competencia", { ascending: true, nullsFirst: false })
       .order("vencimento", { ascending: true, nullsFirst: false }),
     supabase.from("pagamentos").select("*").eq("membro_id", perfil.id),
-    supabase.from("configuracoes").select("chave_pix, favorecido, instrucoes").single(),
   ]);
 
   const mesAtual = primeiroDiaDoMes(hojeISO());
@@ -55,21 +55,18 @@ export default async function PaginaInicio({ searchParams }: PageProps<"/">) {
 
       <InstalarApp />
 
-      {config?.chave_pix && (
-        <Cartao className="flex items-center gap-3">
-          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-ouro-300/30 text-ouro-600 dark:text-ouro-300">
-            <Wallet className="size-5" aria-hidden />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-suave">Chave PIX{config.favorecido ? ` · ${config.favorecido}` : ""}</p>
-            <p data-selecionavel className="truncate font-mono text-sm font-semibold">
-              {config.chave_pix}
-            </p>
-          </div>
-          <CopiarPix texto={config.chave_pix} />
-        </Cartao>
-      )}
-      {config?.instrucoes && <p className="-mt-3 px-1 text-xs text-suave">{config.instrucoes}</p>}
+      <Cartao className="flex items-center gap-3">
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-ouro-300/30 text-ouro-600 dark:text-ouro-300">
+          <Wallet className="size-5" aria-hidden />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs text-suave">Chave Pix · {pixUmp.favorecido}</p>
+          <p data-selecionavel className="truncate font-mono text-sm font-semibold">
+            {pixUmp.chave}
+          </p>
+        </div>
+        <CopiarPix texto={pixUmp.chave} />
+      </Cartao>
 
       <section>
         <h2 className="mb-3 font-serif text-lg font-semibold">Para pagar</h2>

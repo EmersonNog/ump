@@ -33,36 +33,28 @@ function crc16(texto: string) {
 
 const comCrc = (semCrc: string) => `${semCrc}6304${crc16(`${semCrc}6304`)}`;
 
-export type DadosPix = { chave: string | null; nome: string | null; cidade: string | null };
+/** Pix fixo da UMP (QR Code da InfinitePay). Para trocar de conta, substitua este código e publique de novo. */
+const PIX_UMP =
+  "00020101021126330014BR.GOV.BCB.PIX0111077531093085204000053039865802BR5925RIAN FILIPE ARAUJO SOARES6008TERESINA62070503***63044127";
 
-/** Valida o código e extrai chave, nome e cidade. Retorna null se o código for inválido. */
-export function lerPixCopiaECola(codigo: string): DadosPix | null {
-  const texto = codigo.trim();
-  if (!texto.startsWith("000201") || texto.length < 30) return null;
-  if (comCrc(texto.slice(0, -8)) !== texto) return null;
-
-  const campos = lerCampos(texto);
-  if (!campos) return null;
-  const conta = campos.find((c) => c.id === "26");
-  const subcampos = conta ? lerCampos(conta.valor) : null;
-  return {
-    chave: subcampos?.find((c) => c.id === "01")?.valor ?? null,
-    nome: campos.find((c) => c.id === "59")?.valor ?? null,
-    cidade: campos.find((c) => c.id === "60")?.valor ?? null,
-  };
+/** Valida o código uma vez ao carregar: um erro de digitação derruba o build em vez de gerar Pix inválido. */
+function lerPixUmp() {
+  const valido = PIX_UMP.startsWith("000201") && comCrc(PIX_UMP.slice(0, -8)) === PIX_UMP;
+  const campos = valido ? lerCampos(PIX_UMP) : null;
+  const conta = campos?.find((c) => c.id === "26");
+  const chave = conta ? lerCampos(conta.valor)?.find((c) => c.id === "01")?.valor : undefined;
+  const favorecido = campos?.find((c) => c.id === "59")?.valor;
+  if (!campos || !chave || !favorecido) throw new Error("PIX_UMP inválido: confira o código copia e cola.");
+  return { campos, chave, favorecido };
 }
 
-/**
- * Gera o mesmo Pix com o valor já preenchido (campo 54), recalculando o CRC.
- * Só altera Pix estático (com chave). Pix dinâmico (URL do banco) volta sem alteração.
- */
-export function pixComValor(codigo: string, valor: number): string {
-  const texto = codigo.trim();
-  const campos = lerPixCopiaECola(texto) ? lerCampos(texto) : null;
-  if (!campos) return texto;
-  const conta = campos.find((c) => c.id === "26");
-  if (!conta || !lerCampos(conta.valor)?.some((c) => c.id === "01")) return texto;
+const { campos, chave, favorecido } = lerPixUmp();
 
+/** Chave e favorecido exibidos ao membro, extraídos do próprio código. */
+export const pixUmp = { chave, favorecido };
+
+/** Pix copia e cola da UMP com o valor já preenchido (campo 54) e o CRC recalculado. */
+export function pixComValor(valor: number): string {
   const sem = campos.filter((c) => c.id !== "54" && c.id !== "63");
   const posicao = sem.findIndex((c) => Number(c.id) > 54);
   sem.splice(posicao === -1 ? sem.length : posicao, 0, { id: "54", valor: valor.toFixed(2) });
