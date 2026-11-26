@@ -39,14 +39,14 @@ export type Database = {
                   ]
                 },"configuracoes": {
                   Row: {
-                    "chave_pix": string | null,"favorecido": string | null,"id": number,"instrucoes": string | null,"updated_at": string
+                    "chave_pix": string | null,"favorecido": string | null,"id": number,"instrucoes": string | null,"pix_copia_cola": string | null,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "chave_pix"?: string | null,"favorecido"?: string | null,"id"?: number,"instrucoes"?: string | null,"updated_at"?: string
+                    "chave_pix"?: string | null,"favorecido"?: string | null,"id"?: number,"instrucoes"?: string | null,"pix_copia_cola"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "chave_pix"?: string | null,"favorecido"?: string | null,"id"?: number,"instrucoes"?: string | null,"updated_at"?: string
+                    "chave_pix"?: string | null,"favorecido"?: string | null,"id"?: number,"instrucoes"?: string | null,"pix_copia_cola"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     

@@ -66,7 +66,7 @@ export default async function PaginaInicio({ searchParams }: PageProps<"/">) {
               {config.chave_pix}
             </p>
           </div>
-          <CopiarPix chave={config.chave_pix} />
+          <CopiarPix texto={config.chave_pix} />
         </Cartao>
       )}
       {config?.instrucoes && <p className="-mt-3 px-1 text-xs text-suave">{config.instrucoes}</p>}
