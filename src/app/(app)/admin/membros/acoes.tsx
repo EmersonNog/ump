@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Aviso } from "@/components/ui";
 import { atualizarMembro } from "../actions";
 
 export function AcoesMembro({
@@ -29,9 +28,9 @@ export function AcoesMembro({
   const estiloBotao = "rounded-lg px-2.5 py-1.5 text-xs font-semibold transition hover:bg-fundo disabled:opacity-50";
 
   return (
-    <div className="mt-3 border-t border-borda pt-2">
-      {erro && <div className="mb-2"><Aviso>{erro}</Aviso></div>}
-      <div className="flex flex-wrap justify-end gap-1">
+    <div>
+      {erro && <p className="mb-1 text-right text-xs text-red-600 dark:text-red-400">{erro}</p>}
+      <div className="flex justify-end gap-1 whitespace-nowrap">
         <button
           type="button"
           disabled={pendente}
