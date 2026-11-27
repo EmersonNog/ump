@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { History, Home, ShieldCheck, UserRound } from "lucide-react";
+import { CalendarDays, History, Home, ShieldCheck, UserRound } from "lucide-react";
 import { cx } from "./ui";
 
 type Item = { href: string; rotulo: string; Icone: typeof Home; contador?: number };
@@ -25,6 +25,7 @@ export function Navegacao({
   const pathname = usePathname();
   const itens: Item[] = [
     { href: "/", rotulo: "Início", Icone: Home },
+    { href: "/calendario", rotulo: "Calendário", Icone: CalendarDays },
     { href: "/historico", rotulo: "Histórico", Icone: History },
     ...(admin ? [{ href: "/admin", rotulo: "Admin", Icone: ShieldCheck, contador: pendentes }] : []),
     { href: "/perfil", rotulo: "Perfil", Icone: UserRound },

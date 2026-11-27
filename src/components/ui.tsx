@@ -121,6 +121,11 @@ const situacoes: Record<Situacao, { rotulo: string; classe: string; ponto: strin
   nao_pago: { rotulo: "Não pago", classe: "bg-red-50 text-red-800 dark:bg-red-950/60 dark:text-red-200", ponto: "bg-red-500" },
 };
 
+/** Cor do ponto de cada situação (legendas, calendário). */
+export function pontoSituacao(situacao: Situacao) {
+  return situacoes[situacao].ponto;
+}
+
 export function Selo({ situacao, className }: { situacao: Situacao; className?: string }) {
   const { rotulo, classe, ponto } = situacoes[situacao];
   return (

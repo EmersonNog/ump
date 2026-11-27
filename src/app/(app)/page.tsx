@@ -4,7 +4,7 @@ import { EtiquetaData } from "@/components/etiqueta-data";
 import { InstalarApp } from "@/components/instalar-app";
 import { Aviso, BotaoLink, CabecalhoSecao, Logo, cx } from "@/components/ui";
 import { exigirSessao } from "@/lib/auth";
-import { prazo, situacaoPorCobranca, tituloCobranca, type Cobranca, type ItemCobranca } from "@/lib/cobrancas";
+import { itensDoMembro, prazo, tituloCobranca, type Cobranca, type ItemCobranca } from "@/lib/cobrancas";
 import { hojeISO, moeda, primeiroDiaDoMes } from "@/lib/format";
 
 const horaSP = new Intl.DateTimeFormat("pt-BR", { hour: "numeric", hourCycle: "h23", timeZone: "America/Sao_Paulo" });
@@ -32,8 +32,7 @@ export default async function PaginaInicio({ searchParams }: PageProps<"/">) {
   const mesEntrada = primeiroDiaDoMes(perfil.created_at.slice(0, 10));
 
   // Mensalidades contam a partir do mês em que o membro entrou.
-  const relevantes = (cobrancas ?? []).filter((c) => c.tipo === "evento" || (c.competencia ?? "") >= mesEntrada);
-  const itens = situacaoPorCobranca(relevantes, pagamentos ?? []);
+  const itens = itensDoMembro(cobrancas ?? [], pagamentos ?? [], perfil.created_at);
   const vigente = (c: Cobranca) => c.tipo === "evento" || (c.competencia ?? "") <= mesAtual;
   const aberta = (i: ItemCobranca) => i.situacao === "pendente" || i.situacao === "nao_pago";
   const aPagar = itens.filter((i) => vigente(i.cobranca) && aberta(i));

@@ -15,6 +15,7 @@ Tudo cabe nos planos gratuitos: Supabase Free, Vercel Hobby e Web Push sem nenhu
 | Informar pagamento: foto/print/PDF (fotos são comprimidas no aparelho) | Criar eventos e gerar as 12 mensalidades do ano |
 | Histórico com status e motivo de recusa; reenviar quando "não pago" | Situação de cada membro por cobrança (quem falta pagar) |
 | Pix copia e cola e QR Code com o valor de cada cobrança já preenchido | Promover admins, desativar membros |
+| Calendário de vencimentos: abre no mês atual, vira sozinho no mês novo, navega por setas ou deslizando | |
 
 - **O primeiro usuário cadastrado vira administrador automaticamente.**
 - As mensalidades contam a partir do mês em que o membro se cadastrou.
@@ -77,7 +78,7 @@ scripts/gerar-icones.mjs  gera os ícones do PWA (npm run icones)
 src/proxy.ts              sessão Supabase + proteção de rotas
 src/lib/                  clientes Supabase, push, formatação, regras de cobrança
 src/app/(auth)/           entrar, cadastrar, recuperar e nova senha
-src/app/(app)/            início, pagar, histórico, perfil
+src/app/(app)/            início, calendário, pagar, histórico, perfil
 src/app/(app)/admin/      comprovantes, cobranças, membros
 src/lib/pix.ts            Pix fixo da UMP + geração do copia e cola com valor
 ```

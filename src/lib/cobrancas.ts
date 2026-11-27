@@ -50,3 +50,13 @@ export function situacaoPorCobranca(cobrancas: Cobranca[], pagamentos: Pagamento
     return { cobranca, pagamento, situacao };
   });
 }
+
+/**
+ * Cobranças que valem para o membro, com a situação de cada uma:
+ * eventos sempre; mensalidades a partir do mês em que ele se cadastrou.
+ */
+export function itensDoMembro(cobrancas: Cobranca[], pagamentos: Pagamento[], cadastradoEm: string): ItemCobranca[] {
+  const mesEntrada = `${cadastradoEm.slice(0, 7)}-01`;
+  const relevantes = cobrancas.filter((c) => c.tipo === "evento" || (c.competencia ?? "") >= mesEntrada);
+  return situacaoPorCobranca(relevantes, pagamentos);
+}
