@@ -83,6 +83,38 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"lancamentos": {
+                  Row: {
+                    "categoria": string,"created_at": string,"criado_por": string | null,"data": string,"detalhes": string,"forma": string,"id": string,"origem": string,"pagamento_id": string | null,"socio_id": string | null,"valor": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "categoria"?: string,"created_at"?: string,"criado_por"?: string | null,"data": string,"detalhes": string,"forma"?: string,"id"?: string,"origem"?: string,"pagamento_id"?: string | null,"socio_id"?: string | null,"valor": number
+                  }
+                  Update: {
+                    "categoria"?: string,"created_at"?: string,"criado_por"?: string | null,"data"?: string,"detalhes"?: string,"forma"?: string,"id"?: string,"origem"?: string,"pagamento_id"?: string | null,"socio_id"?: string | null,"valor"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "lancamentos_criado_por_fkey"
+      columns: ["criado_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lancamentos_pagamento_id_fkey"
+      columns: ["pagamento_id"]
+isOneToOne: true
+      referencedRelation: "pagamentos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "lancamentos_socio_id_fkey"
+      columns: ["socio_id"]
+isOneToOne: false
+      referencedRelation: "socios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pagamentos": {
                   Row: {
                     "cobranca_id": string,"comprovante_path": string,"created_at": string,"data_pagamento": string,"id": string,"membro_id": string,"motivo": string | null,"observacao": string | null,"revisado_em": string | null,"revisado_por": string | null,"status": Database["public"]['Enums']["pagamento_status"],"valor": number
@@ -148,6 +180,20 @@ isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
+                  ]
+                },"socios": {
+                  Row: {
+                    "created_at": string,"id": string,"nascimento": string | null,"nome": string,"situacao": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id": string,"nascimento"?: string | null,"nome": string,"situacao"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"nascimento"?: string | null,"nome"?: string,"situacao"?: string | null
+                  }
+                  Relationships: [
+                    
                   ]
                 }
           }

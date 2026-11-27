@@ -68,6 +68,20 @@ Quem recebe notificação:
 | Membro envia comprovante | Admins |
 | Admin marca pago / não pago | O membro |
 | Nova cobrança criada (opcional) | Todos os membros ativos |
+| Nova programação no calendário (opcional) | Todos os membros ativos |
+
+## Livro financeiro (Admin → Painel financeiro)
+
+Substitui a planilha do livro: totais, entradas e saídas por mês, saldo acumulado, categorias, formas de pagamento,
+sócios, conferência (sem categoria, sem forma, possíveis duplicados) e a lista de lançamentos, com filtros e edição.
+Comprovante marcado como **pago** entra sozinho no livro (origem "App"); se voltar para análise ou for recusado, sai.
+
+Os dados da planilha antiga não ficam no repositório (ele é público). Para importar uma vez:
+
+```bash
+python scripts/importar-livro.py "Ump_Livro_Financeiro.xlsx" "painel-financeiro-ump.html" > livro.sql
+psql "<url do banco>" -v ON_ERROR_STOP=1 -f livro.sql
+```
 
 ## Estrutura
 
@@ -79,7 +93,7 @@ src/proxy.ts              sessão Supabase + proteção de rotas
 src/lib/                  clientes Supabase, push, formatação, regras de cobrança
 src/app/(auth)/           entrar, cadastrar, recuperar e nova senha
 src/app/(app)/            início, calendário, pagar, histórico, perfil
-src/app/(app)/admin/      comprovantes, cobranças, membros
+src/app/(app)/admin/      comprovantes, cobranças, membros, painel financeiro
 src/lib/pix.ts            Pix fixo da UMP + geração do copia e cola com valor
 ```
 
