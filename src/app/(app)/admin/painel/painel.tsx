@@ -3,6 +3,7 @@
 import { ArrowDownUp, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { BotaoEnviar } from "@/components/botao-enviar";
+import { MenuSelecao } from "@/components/menu-selecao";
 import { Aviso, Botao, Campo, Entrada, Selecao, cx } from "@/components/ui";
 import { excluirLancamento, salvarLancamento } from "./actions";
 
@@ -164,21 +165,18 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
       </div>
 
       {/* Ano: troca o painel inteiro (totais, gráficos, conferência e lançamentos). */}
-      <label className="flex items-center gap-3">
-        <span className="text-sm font-medium text-suave">Ano</span>
-        <span className="block w-40">
-          <Selecao
-            value={f.ano}
-            onChange={(e) => alterar({ ano: e.target.value, mes: e.target.value && !f.mes.startsWith(e.target.value) ? "" : f.mes })}
-            className="font-semibold tabular-nums"
-          >
-            <option value="">Tudo</option>
-            {anos.map((a) => (
-              <option key={a}>{a}</option>
-            ))}
-          </Selecao>
+      <div className="flex items-center gap-3">
+        <span className="text-sm font-medium text-suave" aria-hidden>
+          Ano
         </span>
-      </label>
+        <MenuSelecao
+          rotulo="Ano"
+          valor={f.ano}
+          opcoes={[{ valor: "", rotulo: "Tudo" }, ...anos.map((a) => ({ valor: a, rotulo: a }))]}
+          aoMudar={(ano) => alterar({ ano, mes: ano && !f.mes.startsWith(ano) ? "" : f.mes })}
+          className="w-40"
+        />
+      </div>
 
       {/* Filtros */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
