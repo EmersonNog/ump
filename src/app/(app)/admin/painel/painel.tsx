@@ -164,25 +164,21 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
       </div>
 
       {/* Ano: troca o painel inteiro (totais, gráficos, conferência e lançamentos). */}
-      <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none]">
-        <div role="tablist" aria-label="Ano" className="inline-flex rounded-xl border border-borda bg-fundo p-1">
-          {["", ...anos].map((a) => (
-            <button
-              key={a || "tudo"}
-              type="button"
-              role="tab"
-              aria-selected={f.ano === a}
-              onClick={() => alterar({ ano: a, mes: a && !f.mes.startsWith(a) ? "" : f.mes })}
-              className={cx(
-                "h-9 rounded-lg px-5 text-sm whitespace-nowrap tabular-nums transition",
-                f.ano === a ? "bg-superficie font-semibold text-texto shadow-sm ring-1 ring-borda" : "text-suave hover:text-texto",
-              )}
-            >
-              {a || "Tudo"}
-            </button>
-          ))}
-        </div>
-      </div>
+      <label className="flex items-center gap-3">
+        <span className="text-sm font-medium text-suave">Ano</span>
+        <span className="block w-40">
+          <Selecao
+            value={f.ano}
+            onChange={(e) => alterar({ ano: e.target.value, mes: e.target.value && !f.mes.startsWith(e.target.value) ? "" : f.mes })}
+            className="font-semibold tabular-nums"
+          >
+            <option value="">Tudo</option>
+            {anos.map((a) => (
+              <option key={a}>{a}</option>
+            ))}
+          </Selecao>
+        </span>
+      </label>
 
       {/* Filtros */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
