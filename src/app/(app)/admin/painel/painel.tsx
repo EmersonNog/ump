@@ -151,9 +151,11 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight">Livro financeiro</h1>
           <p className="mt-1 text-sm text-suave">
-            {datas.length
-              ? `${dataBR(datas[0])} a ${dataBR(datas[datas.length - 1])} · ${lancamentos.length} lançamentos`
-              : "Nenhum lançamento ainda"}
+            {!datas.length
+              ? "Nenhum lançamento ainda"
+              : f.ano
+                ? `Ano de ${f.ano} · ${lancamentos.filter((l) => l.data.startsWith(f.ano)).length} lançamentos`
+                : `${dataBR(datas[0])} a ${dataBR(datas[datas.length - 1])} · ${lancamentos.length} lançamentos`}
           </p>
         </div>
         <Botao onClick={() => setEditando("novo")} className="max-sm:w-full">
@@ -161,14 +163,29 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
         </Botao>
       </div>
 
-      {/* Filtros */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        <Selecao aria-label="Ano" value={f.ano} onChange={(e) => alterar({ ano: e.target.value })}>
-          <option value="">Todos os anos</option>
-          {anos.map((a) => (
-            <option key={a}>{a}</option>
+      {/* Ano: troca o painel inteiro (totais, gráficos, conferência e lançamentos). */}
+      <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none]">
+        <div role="tablist" aria-label="Ano" className="inline-flex rounded-xl border border-borda bg-fundo p-1">
+          {["", ...anos].map((a) => (
+            <button
+              key={a || "tudo"}
+              type="button"
+              role="tab"
+              aria-selected={f.ano === a}
+              onClick={() => alterar({ ano: a, mes: a && !f.mes.startsWith(a) ? "" : f.mes })}
+              className={cx(
+                "h-9 rounded-lg px-5 text-sm whitespace-nowrap tabular-nums transition",
+                f.ano === a ? "bg-superficie font-semibold text-texto shadow-sm ring-1 ring-borda" : "text-suave hover:text-texto",
+              )}
+            >
+              {a || "Tudo"}
+            </button>
           ))}
-        </Selecao>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         <Selecao aria-label="Origem" value={f.origem} onChange={(e) => alterar({ origem: e.target.value })}>
           <option value="">Todas as origens</option>
           {unicos((l) => l.origem).map((o) => (
