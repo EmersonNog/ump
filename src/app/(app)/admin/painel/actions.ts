@@ -27,7 +27,9 @@ export async function salvarLancamento(_: Resultado, form: FormData): Promise<Re
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return { erro: "Informe a data." };
   if (!detalhes) return { erro: "Descreva o lançamento." };
   if (!valor) return { erro: "Informe um valor válido." };
-  if (!FORMAS.includes(forma) || !ORIGENS.includes(origem)) return { erro: "Forma ou origem inválida." };
+  if (!FORMAS.includes(forma) || !ORIGENS.includes(origem) || (!id && origem === "App")) {
+    return { erro: "Forma ou origem inválida." };
+  }
 
   const campos = {
     data,

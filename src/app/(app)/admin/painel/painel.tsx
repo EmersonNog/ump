@@ -797,7 +797,8 @@ function DialogoLancamento({
         <div className="grid grid-cols-2 gap-3">
           <Campo rotulo="Origem">
             <Selecao name="origem" defaultValue={lancamento?.origem ?? "Livro"}>
-              {["Livro", "Relatório bancário", "App"].map((x) => (
+              {/* "App" é só dos lançamentos automáticos; aparece apenas ao editar um deles. */}
+              {["Livro", "Relatório bancário", ...(lancamento?.origem === "App" ? ["App"] : [])].map((x) => (
                 <option key={x}>{x}</option>
               ))}
             </Selecao>
