@@ -15,7 +15,7 @@ Tudo cabe nos planos gratuitos: Supabase Free, Vercel Hobby e Web Push sem nenhu
 | Informar pagamento: foto/print/PDF (fotos são comprimidas no aparelho) | Criar eventos e gerar as 12 mensalidades do ano |
 | Histórico com status e motivo de recusa; reenviar quando "não pago" | Situação de cada membro por cobrança (quem falta pagar) |
 | Pix copia e cola e QR Code com o valor de cada cobrança já preenchido | Promover admins, desativar membros |
-| Calendário de vencimentos: abre no mês atual, vira sozinho no mês novo, navega por setas ou deslizando | |
+| Calendário da UMP: vê a programação de cada dia e confirma se vai ou não | Cadastrar, editar e excluir eventos no calendário e ver quem confirmou |
 
 - **O primeiro usuário cadastrado vira administrador automaticamente.**
 - As mensalidades contam a partir do mês em que o membro se cadastrou.

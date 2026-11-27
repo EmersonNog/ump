@@ -23,7 +23,53 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "cobrancas": {
+            "agenda_eventos": {
+                  Row: {
+                    "created_at": string,"criado_por": string | null,"data": string,"descricao": string | null,"hora": string | null,"id": string,"local": string | null,"titulo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"criado_por"?: string | null,"data": string,"descricao"?: string | null,"hora"?: string | null,"id"?: string,"local"?: string | null,"titulo": string
+                  }
+                  Update: {
+                    "created_at"?: string,"criado_por"?: string | null,"data"?: string,"descricao"?: string | null,"hora"?: string | null,"id"?: string,"local"?: string | null,"titulo"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agenda_eventos_criado_por_fkey"
+      columns: ["criado_por"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"agenda_presencas": {
+                  Row: {
+                    "evento_id": string,"membro_id": string,"updated_at": string,"vai": boolean
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "evento_id": string,"membro_id"?: string,"updated_at"?: string,"vai": boolean
+                  }
+                  Update: {
+                    "evento_id"?: string,"membro_id"?: string,"updated_at"?: string,"vai"?: boolean
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "agenda_presencas_evento_id_fkey"
+      columns: ["evento_id"]
+isOneToOne: false
+      referencedRelation: "agenda_eventos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "agenda_presencas_membro_id_fkey"
+      columns: ["membro_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"cobrancas": {
                   Row: {
                     "ativa": boolean,"competencia": string | null,"created_at": string,"descricao": string | null,"id": string,"tipo": Database["public"]['Enums']["cobranca_tipo"],"titulo": string,"valor": number,"vencimento": string | null
                   }
