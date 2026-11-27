@@ -38,7 +38,7 @@ function Pontos({ className }: { className?: string }) {
 
 export default function LayoutAuth({ children }: { children: ReactNode }) {
   return (
-    <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-fundo px-4 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:px-8">
+    <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-fundo px-4 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:px-8 md:[@media(max-height:620px)]:pt-3 md:[@media(max-height:620px)]:pb-3">
       <BotaoTema className="absolute top-[calc(env(safe-area-inset-top)+0.75rem)] right-3 z-10 bg-superficie/80 backdrop-blur" />
       {/* Fundo geométrico em tons pastel */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -55,10 +55,10 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
         <Pontos className="absolute top-12 right-[22%] hidden size-28 text-laranja-300/70 md:block dark:text-laranja-900" />
       </div>
 
-      <div className="flex w-full max-w-4xl flex-col items-center gap-6">
+      <div className="flex w-full max-w-4xl flex-col items-center gap-6 md:[@media(max-height:760px)]:gap-4">
         <div className="animate-entrar grid w-full overflow-hidden rounded-[1.75rem] border border-borda bg-superficie shadow-xl shadow-laranja-900/5 md:grid-cols-[1.05fr_1fr]">
           {/* Painel da marca */}
-          <section className="malha-suave px-7 pt-7 pb-9 md:px-12 md:py-14">
+          <section className="malha-suave px-7 pt-7 pb-9 md:px-12 md:py-14 md:[@media(max-height:760px)]:py-9">
             <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
               <div className="absolute -bottom-24 -left-20 size-64 rounded-full border-[36px] border-white/60 dark:border-white/5" />
               {/* Anel "ump·jóquei" dos cartazes girando ao fundo. */}
@@ -75,7 +75,7 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
               </span>
             </div>
 
-            <h1 className="mt-8 font-display text-4xl leading-[1.02] tracking-tight md:mt-16 md:text-5xl">
+            <h1 className="mt-8 font-display text-4xl leading-[1.02] tracking-tight md:mt-16 md:text-5xl md:[@media(max-height:760px)]:mt-8">
               <span className="font-medium">Olá,</span>
               <br />
               <span className="font-black text-laranja-600 dark:text-laranja-400">boas-vindas!</span>
@@ -86,7 +86,7 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
           </section>
 
           {/* Formulário */}
-          <section className="flex flex-col justify-center px-7 py-8 md:px-12 md:py-14">{children}</section>
+          <section className="flex flex-col justify-center px-7 py-8 md:px-12 md:py-14 md:[@media(max-height:760px)]:py-9">{children}</section>
         </div>
 
         <p className="px-4 text-center text-sm text-suave">
