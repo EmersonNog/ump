@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { normalizarTelefone } from "@/lib/telefone";
 
 export type EstadoForm = { erro?: string; sucesso?: string };
 
@@ -53,19 +54,20 @@ export async function entrar(_: EstadoForm, form: FormData): Promise<EstadoForm>
 
 export async function cadastrar(_: EstadoForm, form: FormData): Promise<EstadoForm> {
   const nome = texto(form, "nome");
-  const telefone = texto(form, "telefone");
+  const celular = normalizarTelefone(texto(form, "telefone"));
   const email = texto(form, "email");
   const senha = String(form.get("senha") ?? "");
 
   if (nome.length < 2) return { erro: "Informe seu nome completo." };
   if (!email.includes("@")) return { erro: "Informe um e-mail válido." };
   if (senha.length < 8) return { erro: "A senha precisa ter pelo menos 8 caracteres." };
+  if ("erro" in celular) return { erro: celular.erro };
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
-    options: { data: { nome, telefone }, emailRedirectTo: `${await origem()}/auth/callback` },
+    options: { data: { nome, telefone: celular.telefone }, emailRedirectTo: `${await origem()}/auth/callback` },
   });
   if (error) return { erro: traduzir(error) };
 

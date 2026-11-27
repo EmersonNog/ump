@@ -7,6 +7,7 @@ import { exigirAdmin } from "@/lib/auth";
 import { tituloCobranca } from "@/lib/cobrancas";
 import { data, dataHoraCurta, moeda } from "@/lib/format";
 import { Revisao } from "./revisao";
+import { numeroWhatsApp } from "@/lib/telefone";
 
 export const metadata: Metadata = { title: "Conferir comprovante" };
 
@@ -29,7 +30,7 @@ export default async function PaginaPagamento({ params, searchParams }: PageProp
   const { data: link } = await supabase.storage.from("comprovantes").createSignedUrl(p.comprovante_path, 60 * 30);
   const pdf = p.comprovante_path.toLowerCase().endsWith(".pdf");
   const divergente = p.cobranca && Number(p.valor) !== Number(p.cobranca.valor);
-  const whatsapp = p.membro?.telefone?.replace(/\D/g, "");
+  const telefone = p.membro?.telefone;
 
   return (
     <>
@@ -70,14 +71,14 @@ export default async function PaginaPagamento({ params, searchParams }: PageProp
             <div className="min-w-0">
               <h1 className="font-display text-xl font-bold tracking-tight break-words">{p.membro?.nome ?? "Membro removido"}</h1>
               {p.membro?.email && <p className="truncate text-sm text-suave">{p.membro.email}</p>}
-              {whatsapp && (
+              {telefone && (
                 <a
-                  href={`https://wa.me/${whatsapp.length <= 11 ? `55${whatsapp}` : whatsapp}`}
+                  href={`https://wa.me/${numeroWhatsApp(telefone)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 inline-flex items-center gap-1.5 text-sm text-suave underline-offset-4 transition hover:text-texto hover:underline"
+                  className="mt-1 inline-flex items-center gap-1.5 text-sm text-suave tabular-nums underline-offset-4 transition hover:text-texto hover:underline"
                 >
-                  <MessageCircle className="size-3.5" aria-hidden /> Falar no WhatsApp
+                  <MessageCircle className="size-3.5" aria-hidden /> {telefone} · Falar no WhatsApp
                 </a>
               )}
             </div>

@@ -6,6 +6,7 @@ import { Eye, EyeOff, Lock, Mail, Phone, UserRound, type LucideIcon } from "luci
 import { BotaoEnviar } from "@/components/botao-enviar";
 import { Aviso, BotaoLink, cx } from "@/components/ui";
 import { cadastrar, definirSenha, entrar, recuperarSenha, type EstadoForm } from "./actions";
+import { atributosTelefone } from "@/lib/telefone";
 
 const inicial: EstadoForm = {};
 
@@ -120,10 +121,7 @@ export function FormCadastrar() {
         icone={Phone}
         rotulo="Celular (WhatsApp) · opcional"
         name="telefone"
-        type="tel"
-        autoComplete="tel"
-        inputMode="tel"
-        placeholder="(00) 00000-0000"
+        {...atributosTelefone}
       />
       <CampoLogin
         icone={Mail}

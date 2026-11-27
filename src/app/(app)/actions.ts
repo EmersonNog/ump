@@ -6,6 +6,7 @@ import { tituloCobranca } from "@/lib/cobrancas";
 import { lerValor, moeda } from "@/lib/format";
 import { notificar } from "@/lib/push";
 import { createServiceClient } from "@/lib/supabase/server";
+import { normalizarTelefone } from "@/lib/telefone";
 
 export type Resultado = { erro?: string; sucesso?: string };
 
@@ -87,12 +88,13 @@ export async function cancelarPagamento(id: string): Promise<Resultado> {
 export async function atualizarPerfil(_: Resultado, form: FormData): Promise<Resultado> {
   const { supabase, perfil } = await exigirSessao();
   const nome = String(form.get("nome") ?? "").trim();
-  const telefone = String(form.get("telefone") ?? "").trim();
+  const celular = normalizarTelefone(String(form.get("telefone") ?? ""));
   if (nome.length < 2) return { erro: "Informe seu nome completo." };
+  if ("erro" in celular) return { erro: celular.erro };
 
   const { error } = await supabase
     .from("profiles")
-    .update({ nome, telefone: telefone || null })
+    .update({ nome, telefone: celular.telefone })
     .eq("id", perfil.id);
   if (error) return { erro: "Não foi possível salvar." };
 

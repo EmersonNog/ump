@@ -7,14 +7,10 @@ import { exigirAdmin } from "@/lib/auth";
 import { situacaoPorCobranca, tituloCobranca } from "@/lib/cobrancas";
 import { data, moeda } from "@/lib/format";
 import { AcoesCobranca } from "./acoes";
+import { numeroWhatsApp } from "@/lib/telefone";
 
 export const metadata: Metadata = { title: "Cobrança" };
 
-/** Número no formato do wa.me (com DDI 55 quando faltar). */
-const whatsapp = (telefone: string) => {
-  const n = telefone.replace(/\D/g, "");
-  return n.length <= 11 ? `55${n}` : n;
-};
 
 export default async function PaginaCobranca({ params }: PageProps<"/admin/cobrancas/[id]">) {
   const { id } = await params;
@@ -115,7 +111,7 @@ export default async function PaginaCobranca({ params }: PageProps<"/admin/cobra
                       <span className="block truncate font-medium">{membro.nome}</span>
                       {membro.telefone && (
                         <a
-                          href={`https://wa.me/${whatsapp(membro.telefone)}?text=${encodeURIComponent(
+                          href={`https://wa.me/${numeroWhatsApp(membro.telefone)}?text=${encodeURIComponent(
                             `Oi, ${membro.nome.split(" ")[0]}! Aqui é da diretoria da UMP Jóquei. Consta em aberto: ${tituloCobranca(cobranca).toLowerCase()} (${moeda(cobranca.valor)}). Dá para pagar e enviar o comprovante pelo app. Obrigado!`,
                           )}`}
                           target="_blank"

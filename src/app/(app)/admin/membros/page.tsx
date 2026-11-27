@@ -6,6 +6,7 @@ import { exigirAdmin } from "@/lib/auth";
 import { situacaoPorCobranca } from "@/lib/cobrancas";
 import { data, hojeISO, moeda, primeiroDiaDoMes } from "@/lib/format";
 import { AcoesMembro, MenuMembro } from "./acoes";
+import { numeroWhatsApp } from "@/lib/telefone";
 
 export const metadata: Metadata = { title: "Membros" };
 
@@ -30,10 +31,9 @@ function iniciais(nome: string) {
 
 /** Link de WhatsApp com a cobrança já escrita, para a diretoria não precisar redigir. */
 function linkCobranca(telefone: string | null, nome: string, meses: string[], valor: number) {
-  const numero = telefone?.replace(/\D/g, "");
-  if (!numero) return null;
+  if (!telefone) return null;
   const texto = `Oi, ${nome.split(" ")[0]}! Aqui é da diretoria da UMP Jóquei. Consta em aberto: mensalidade de ${meses.join(", ")} (${moeda(valor)}). Dá para pagar e enviar o comprovante pelo app. Obrigado!`;
-  return `https://wa.me/${numero.length <= 11 ? `55${numero}` : numero}?text=${encodeURIComponent(texto)}`;
+  return `https://wa.me/${numeroWhatsApp(telefone)}?text=${encodeURIComponent(texto)}`;
 }
 
 export default async function PaginaMembros({ searchParams }: PageProps<"/admin/membros">) {
