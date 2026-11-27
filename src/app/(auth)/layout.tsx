@@ -55,7 +55,7 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
         <Pontos className="absolute top-12 right-[22%] hidden size-28 text-laranja-300/70 md:block dark:text-laranja-900" />
       </div>
 
-      <div className="flex w-full max-w-4xl flex-col items-center gap-6 md:[@media(max-height:760px)]:gap-4">
+      <div className="flex w-full max-w-4xl flex-col items-center gap-4 md:gap-6 md:[@media(max-height:760px)]:gap-4">
         <div className="animate-entrar grid w-full overflow-hidden rounded-[1.75rem] border border-borda bg-superficie shadow-xl shadow-laranja-900/5 md:grid-cols-[1.05fr_1fr]">
           {/* Painel da marca */}
           <section className="malha-suave px-7 pt-7 pb-9 md:px-12 md:py-14 md:[@media(max-height:760px)]:py-9">
@@ -89,8 +89,8 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
           <section className="flex flex-col justify-center px-7 py-8 md:px-12 md:py-14 md:[@media(max-height:760px)]:py-9">{children}</section>
         </div>
 
-        <p className="px-4 text-center text-sm text-suave">
-          “Ninguém despreze a tua mocidade” · 1 Tm 4.12
+        <p className="px-4 text-center text-xs text-balance text-suave sm:text-sm">
+          “Ninguém despreze a tua mocidade; pelo contrário, torna-te padrão dos fiéis.” · 1 Tm 4.12 (ARA)
         </p>
       </div>
     </div>
