@@ -90,7 +90,7 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
         </div>
 
         <p className="px-4 text-center text-xs text-balance text-suave sm:text-sm">
-          “Ninguém despreze a tua mocidade; pelo contrário, torna-te padrão dos fiéis.” · 1 Tm 4.12 (ARA)
+          “Ninguém despreze a tua mocidade; pelo contrário, torna-te padrão dos fiéis.” · 1 Tm 4.12
         </p>
       </div>
     </div>

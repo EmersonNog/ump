@@ -68,7 +68,7 @@ export default async function PaginaPerfil() {
         </form>
       </div>
 
-      <p className="mt-10 text-center text-xs text-suave">“Alegrai-vos sempre no Senhor; outra vez digo: alegrai-vos.” · Fp 4.4 (ARA)</p>
+      <p className="mt-10 text-center text-xs text-suave">“Alegrai-vos sempre no Senhor; outra vez digo: alegrai-vos.” · Fp 4.4</p>
     </div>
   );
 }
