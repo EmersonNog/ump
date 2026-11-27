@@ -7,9 +7,7 @@ import { lerValor } from "@/lib/format";
 export type Resultado = { erro?: string; sucesso?: string };
 
 const FORMAS = ["Pix", "Cartão", "Dinheiro", "Não informado"] as const;
-const ORIGENS = ["Livro", "Relatório bancário", "App"] as const;
 type Forma = (typeof FORMAS)[number];
-type Origem = (typeof ORIGENS)[number];
 
 /** Cria (sem `id`) ou edita (com `id`) um lançamento do livro. */
 export async function salvarLancamento(_: Resultado, form: FormData): Promise<Resultado> {
@@ -21,15 +19,12 @@ export async function salvarLancamento(_: Resultado, form: FormData): Promise<Re
   const saida = form.get("direcao") === "saida";
   const categoria = String(form.get("categoria") ?? "").trim() || "Sem categoria";
   const forma = String(form.get("forma") ?? "Não informado") as Forma;
-  const origem = String(form.get("origem") ?? "Livro") as Origem;
   const socio = String(form.get("socio") ?? "") || null;
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return { erro: "Informe a data." };
   if (!detalhes) return { erro: "Descreva o lançamento." };
   if (!valor) return { erro: "Informe um valor válido." };
-  if (!FORMAS.includes(forma) || !ORIGENS.includes(origem) || (!id && origem === "App")) {
-    return { erro: "Forma ou origem inválida." };
-  }
+  if (!FORMAS.includes(forma)) return { erro: "Forma de pagamento inválida." };
 
   const campos = {
     data,
@@ -37,12 +32,12 @@ export async function salvarLancamento(_: Resultado, form: FormData): Promise<Re
     valor: saida ? -valor : valor,
     categoria: categoria.slice(0, 60),
     forma,
-    origem,
     socio_id: socio,
   };
+  // Lançamento manual sempre entra como "Livro"; ao editar, a origem (Livro ou App) fica como estava.
   const { error } = id
     ? await supabase.from("lancamentos").update(campos).eq("id", id)
-    : await supabase.from("lancamentos").insert(campos);
+    : await supabase.from("lancamentos").insert({ ...campos, origem: "Livro" });
   if (error) return { erro: "Não foi possível salvar o lançamento." };
 
   revalidatePath("/admin/painel");

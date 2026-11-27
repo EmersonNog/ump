@@ -483,8 +483,8 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
           </>
         )}
         <p className="mt-4 text-xs text-suave">
-          Entrada = valor positivo; saída = valor negativo. “Livro” = lançado à mão; “Relatório bancário” = extrato do banco; “App” =
-          comprovante aprovado no app, lançado sozinho. O ID identifica o sócio na lista de sócios.
+          Entrada = valor positivo; saída = valor negativo. “Livro” = lançamento da tesouraria; “App” = comprovante aprovado no app,
+          lançado sozinho. O ID identifica o sócio na lista de sócios.
         </p>
       </section>
 
@@ -805,26 +805,16 @@ function DialogoLancamento({
             </Selecao>
           </Campo>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Campo rotulo="Origem">
-            <Selecao name="origem" defaultValue={lancamento?.origem ?? "Livro"}>
-              {/* "App" é só dos lançamentos automáticos; aparece apenas ao editar um deles. */}
-              {["Livro", "Relatório bancário", ...(lancamento?.origem === "App" ? ["App"] : [])].map((x) => (
-                <option key={x}>{x}</option>
-              ))}
-            </Selecao>
-          </Campo>
-          <Campo rotulo="Sócio" dica="Opcional">
-            <Selecao name="socio" defaultValue={lancamento?.socio ?? ""}>
-              <option value="">Nenhum</option>
-              {Object.entries(socios).map(([id, nome]) => (
-                <option key={id} value={id}>
-                  {id} · {nome}
-                </option>
-              ))}
-            </Selecao>
-          </Campo>
-        </div>
+        <Campo rotulo="Sócio" dica="Opcional">
+          <Selecao name="socio" defaultValue={lancamento?.socio ?? ""}>
+            <option value="">Nenhum</option>
+            {Object.entries(socios).map(([id, nome]) => (
+              <option key={id} value={id}>
+                {id} · {nome}
+              </option>
+            ))}
+          </Selecao>
+        </Campo>
         <div className="flex gap-2 pt-1">
           <BotaoEnviar className="flex-1">{lancamento ? "Salvar" : "Adicionar"}</BotaoEnviar>
           <Botao type="button" variante="secundario" onClick={() => ref.current?.close()}>

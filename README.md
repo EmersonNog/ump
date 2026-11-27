@@ -75,11 +75,13 @@ Quem recebe notificação:
 Substitui a planilha do livro: totais, entradas e saídas por mês, saldo acumulado, categorias, formas de pagamento,
 sócios, conferência (sem categoria, sem forma, possíveis duplicados) e a lista de lançamentos, com filtros e edição.
 Comprovante marcado como **pago** entra sozinho no livro (origem "App"); se voltar para análise ou for recusado, sai.
+Os demais lançamentos têm origem "Livro" (livro e relatório bancário foram unificados).
 
-Os dados da planilha antiga não ficam no repositório (ele é público). Para importar uma vez:
+Os dados da planilha não ficam no repositório (ele é público). Para importar (ou trocar pela versão nova da planilha;
+os lançamentos do app são mantidos):
 
 ```bash
-python scripts/importar-livro.py "Ump_Livro_Financeiro.xlsx" "painel-financeiro-ump.html" > livro.sql
+python scripts/importar-livro.py "Ump_Livro_Financeiro.xlsx" --substituir > livro.sql
 psql "<url do banco>" -v ON_ERROR_STOP=1 -f livro.sql
 ```
 
