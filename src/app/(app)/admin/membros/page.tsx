@@ -6,7 +6,7 @@ import { exigirAdmin } from "@/lib/auth";
 import { situacaoPorCobranca } from "@/lib/cobrancas";
 import { data, hojeISO, moeda, primeiroDiaDoMes } from "@/lib/format";
 import { AcoesMembro, MenuMembro } from "./acoes";
-import { numeroWhatsApp } from "@/lib/telefone";
+import { formatarTelefone, numeroWhatsApp } from "@/lib/telefone";
 
 export const metadata: Metadata = { title: "Membros" };
 
@@ -210,7 +210,7 @@ export default async function PaginaMembros({ searchParams }: PageProps<"/admin/
                   </p>
                   <p className="truncate text-xs text-suave">
                     Desde {mesAno.format(new Date(`${l.membro.created_at.slice(0, 10)}T00:00:00Z`)).replace(". de", "")}
-                    {l.membro.telefone ? ` · ${l.membro.telefone}` : ""}
+                    {l.membro.telefone ? ` · ${formatarTelefone(l.membro.telefone)}` : ""}
                   </p>
                 </div>
                 <MenuMembro rotulo={`Mais ações para ${l.membro.nome}`}>
@@ -304,7 +304,7 @@ export default async function PaginaMembros({ searchParams }: PageProps<"/admin/
                   </p>
                   <p className="text-xs text-suave">{l.membro.email}</p>
                   <p className="text-xs text-suave tabular-nums">
-                    {l.membro.telefone ? `${l.membro.telefone} · ` : ""}desde {data(l.membro.created_at.slice(0, 10))}
+                    {l.membro.telefone ? `${formatarTelefone(l.membro.telefone)} · ` : ""}desde {data(l.membro.created_at.slice(0, 10))}
                   </p>
                 </td>
                 <td className="space-y-1.5 py-4 pr-4">

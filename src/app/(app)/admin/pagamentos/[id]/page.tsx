@@ -7,7 +7,7 @@ import { exigirAdmin } from "@/lib/auth";
 import { tituloCobranca } from "@/lib/cobrancas";
 import { data, dataHoraCurta, moeda } from "@/lib/format";
 import { Revisao } from "./revisao";
-import { numeroWhatsApp } from "@/lib/telefone";
+import { formatarTelefone, numeroWhatsApp } from "@/lib/telefone";
 
 export const metadata: Metadata = { title: "Conferir comprovante" };
 
@@ -78,7 +78,7 @@ export default async function PaginaPagamento({ params, searchParams }: PageProp
                   rel="noreferrer"
                   className="mt-1 inline-flex items-center gap-1.5 text-sm text-suave tabular-nums underline-offset-4 transition hover:text-texto hover:underline"
                 >
-                  <MessageCircle className="size-3.5" aria-hidden /> {telefone} · Falar no WhatsApp
+                  <MessageCircle className="size-3.5" aria-hidden /> {formatarTelefone(telefone)} · Falar no WhatsApp
                 </a>
               )}
             </div>
