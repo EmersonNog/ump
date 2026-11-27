@@ -3,16 +3,16 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "UMP · Pagamentos",
-    short_name: "UMP",
-    description: "Informe mensalidades e pagamentos de eventos da Mocidade Presbiteriana.",
+    name: "UMP Jóquei",
+    short_name: "UMP Jóquei",
+    description: "Informe mensalidades e pagamentos de eventos da UMP Jóquei.",
     lang: "pt-BR",
     start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#0b3220",
-    theme_color: "#155637",
+    background_color: "#f4f5f8",
+    theme_color: "#f4f5f8",
     categories: ["finance", "lifestyle"],
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

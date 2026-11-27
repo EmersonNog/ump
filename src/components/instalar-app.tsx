@@ -1,7 +1,8 @@
 "use client";
 
-import { Download, Share, SquarePlus, X } from "lucide-react";
+import { Share, Smartphone, SquarePlus, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Botao, cx } from "./ui";
 
 type EventoInstalacao = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 
@@ -57,33 +58,44 @@ export function InstalarApp({ sempreVisivel = false }: { sempreVisivel?: boolean
   }
 
   return (
-    <div className="animate-entrar relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 to-brand-900 p-4 pr-10 text-white shadow-lg shadow-brand-900/20">
-      {!sempreVisivel && (
-        <button type="button" onClick={dispensar} aria-label="Dispensar" className="absolute top-2 right-2 rounded-full p-1.5 text-brand-200 hover:bg-white/10">
-          <X className="size-4" />
-        </button>
+    <div
+      className={cx(
+        "flex items-center gap-3",
+        sempreVisivel ? "py-4" : "animate-entrar rounded-2xl border border-borda bg-superficie p-4",
       )}
-      <p className="font-semibold">Instale o app da UMP</p>
-      {ios ? (
-        <p className="mt-1 text-sm text-brand-100">
-          Toque em <Share className="inline size-4 align-text-bottom text-ouro-300" aria-label="Compartilhar" /> e depois em{" "}
-          <span className="whitespace-nowrap font-semibold">
-            <SquarePlus className="inline size-4 align-text-bottom text-ouro-300" aria-hidden /> Adicionar à Tela de Início
-          </span>
-          . Assim você também recebe notificações.
-        </p>
-      ) : (
-        <>
-          <p className="mt-1 text-sm text-brand-100">Acesso rápido pela tela inicial, em tela cheia, com notificações.</p>
+    >
+      <Smartphone className="size-5 shrink-0 text-suave" aria-hidden />
+      <div className="min-w-0 flex-1">
+        <p className="font-medium">Instale o app</p>
+        {ios ? (
+          <p className="mt-0.5 text-sm text-suave">
+            Toque em <Share className="inline size-4 align-text-bottom" aria-label="Compartilhar" /> e depois em{" "}
+            <span className="font-medium whitespace-nowrap text-texto">
+              <SquarePlus className="inline size-4 align-text-bottom" aria-hidden /> Adicionar à Tela de Início
+            </span>
+            . Assim você também recebe notificações.
+          </p>
+        ) : (
+          <p className="mt-0.5 text-sm text-suave">Acesso rápido e notificações.</p>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        {!ios && (
+          <Botao type="button" variante="secundario" onClick={instalar}>
+            Instalar
+          </Botao>
+        )}
+        {!sempreVisivel && (
           <button
             type="button"
-            onClick={instalar}
-            className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl bg-ouro-400 px-4 text-sm font-bold text-brand-950 active:scale-95"
+            onClick={dispensar}
+            aria-label="Dispensar"
+            className="grid size-9 place-items-center rounded-full text-suave transition hover:bg-fundo hover:text-texto"
           >
-            <Download className="size-4" aria-hidden /> Instalar
+            <X className="size-4" />
           </button>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

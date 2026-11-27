@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle2, CircleAlert, Clock3 } from "lucide-react";
+import { ChevronRight, MessageCircle } from "lucide-react";
 import { cx } from "@/components/ui";
 import { exigirAdmin } from "@/lib/auth";
 import { situacaoPorCobranca } from "@/lib/cobrancas";
 import { data, hojeISO, moeda, primeiroDiaDoMes } from "@/lib/format";
-import { AcoesMembro } from "./acoes";
+import { AcoesMembro, MenuMembro } from "./acoes";
 
 export const metadata: Metadata = { title: "Membros" };
 
@@ -17,6 +17,24 @@ const FILTROS = [
 ] as const;
 type Filtro = (typeof FILTROS)[number]["valor"];
 const ehFiltro = (valor: unknown): valor is Filtro => FILTROS.some((f) => f.valor === valor);
+
+const mesCurto = new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "UTC" });
+const mesAno = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" });
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+
+/** Iniciais do nome (primeiro e último), para o avatar da lista do celular. */
+function iniciais(nome: string) {
+  const partes = nome.trim().split(/\s+/);
+  return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? partes[partes.length - 1][0] : "")).toUpperCase();
+}
+
+/** Link de WhatsApp com a cobrança já escrita, para a diretoria não precisar redigir. */
+function linkCobranca(telefone: string | null, nome: string, meses: string[], valor: number) {
+  const numero = telefone?.replace(/\D/g, "");
+  if (!numero) return null;
+  const texto = `Oi, ${nome.split(" ")[0]}! Aqui é da diretoria da UMP Jóquei. Consta em aberto: mensalidade de ${meses.join(", ")} (${moeda(valor)}). Dá para pagar e enviar o comprovante pelo app. Obrigado!`;
+  return `https://wa.me/${numero.length <= 11 ? `55${numero}` : numero}?text=${encodeURIComponent(texto)}`;
+}
 
 export default async function PaginaMembros({ searchParams }: PageProps<"/admin/membros">) {
   const { filtro: filtroParam } = await searchParams;
@@ -37,23 +55,28 @@ export default async function PaginaMembros({ searchParams }: PageProps<"/admin/
     const mensalidades = (cobrancas ?? []).filter(
       (c) => c.tipo === "mensalidade" && (c.competencia ?? "") >= mesEntrada && (c.competencia ?? "") <= mesAtual,
     );
-    const itens = situacaoPorCobranca(mensalidades, meus);
-    const abertas = itens.filter((i) => i.situacao === "pendente" || i.situacao === "nao_pago");
+    const abertas = situacaoPorCobranca(mensalidades, meus).filter((i) => i.situacao === "pendente" || i.situacao === "nao_pago");
     const pagos = meus.filter((p) => p.status === "pago");
-    const ultimo = pagos.reduce<string | null>((max, p) => (!max || p.data_pagamento > max ? p.data_pagamento : max), null);
+    const valorAberto = abertas.reduce((s, i) => s + Number(i.cobranca.valor), 0);
+    const meses = abertas.map((i) =>
+      i.cobranca.competencia ? mesCurto.format(new Date(`${i.cobranca.competencia}T00:00:00Z`)).replace(".", "") : "?",
+    );
 
     return {
       membro: m,
       abertas: abertas.length,
-      valorAberto: abertas.reduce((s, i) => s + Number(i.cobranca.valor), 0),
+      meses,
+      valorAberto,
+      whatsapp: abertas.length > 0 ? linkCobranca(m.telefone, m.nome, meses, valorAberto) : null,
       emAnalise: meus.filter((p) => p.status === "em_analise").length,
       eventosPagos: new Set(
         pagos.filter((p) => cobrancas?.find((c) => c.id === p.cobranca_id)?.tipo === "evento").map((p) => p.cobranca_id),
       ).size,
       totalPago: pagos.reduce((s, p) => s + Number(p.valor), 0),
-      ultimo,
+      ultimo: pagos.reduce<string | null>((max, p) => (!max || p.data_pagamento > max ? p.data_pagamento : max), null),
     };
   });
+  type Linha = (typeof linhas)[number];
 
   const ativos = linhas.filter((l) => l.membro.ativo);
   const contagem: Record<Filtro, number> = {
@@ -68,108 +91,256 @@ export default async function PaginaMembros({ searchParams }: PageProps<"/admin/
       : ativos.filter((l) => filtro === "todos" || (filtro === "aberto" ? l.abertas > 0 : l.abertas === 0));
   const totalAberto = ativos.reduce((s, l) => s + l.valorAberto, 0);
 
+  const situacao = (l: Linha) =>
+    l.abertas === 0 ? (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-200">
+        <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
+        Em dia
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-laranja-50 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-laranja-800 tabular-nums dark:bg-laranja-950/60 dark:text-laranja-200">
+        <span className="size-1.5 rounded-full bg-laranja-500" aria-hidden />
+        {l.meses.join(", ")} · {moeda(l.valorAberto)}
+      </span>
+    );
+
+  const cobrar = (l: Linha) =>
+    l.whatsapp && (
+      <a
+        href={l.whatsapp}
+        target="_blank"
+        rel="noreferrer"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-azul-700 underline-offset-4 hover:underline dark:text-azul-300"
+      >
+        <MessageCircle className="size-3.5" aria-hidden /> Lembrar no WhatsApp
+      </a>
+    );
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <p className="text-sm text-suave">
-          {ativos.length} membro(s) ativo(s) · {contagem.aberto} com mensalidade em aberto ·{" "}
-          <span className="font-semibold text-texto">{moeda(totalAberto)}</span> a receber
-        </p>
-        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none]">
+    <div className="space-y-6">
+      {/* Celular: resumo em números e filtros que cabem na largura, sem rolagem. */}
+      <div className="space-y-4 md:hidden">
+        <dl className="grid grid-cols-3 divide-x divide-borda rounded-2xl border border-borda bg-superficie py-3">
+          <div className="px-3">
+            <dt className="text-xs text-suave">Ativos</dt>
+            <dd className="mt-0.5 font-display text-xl font-bold tabular-nums">{ativos.length}</dd>
+          </div>
+          <div className="px-3">
+            <dt className="text-xs text-suave">Em aberto</dt>
+            <dd className="mt-0.5 font-display text-xl font-bold tabular-nums">{contagem.aberto}</dd>
+          </div>
+          <div className="px-3">
+            <dt className="text-xs text-suave">A receber</dt>
+            <dd className="mt-0.5 font-display text-xl font-bold whitespace-nowrap tabular-nums">{moeda(totalAberto)}</dd>
+          </div>
+        </dl>
+        <nav aria-label="Filtrar membros" className="grid grid-cols-4 gap-1 rounded-xl border border-borda bg-fundo p-1">
           {FILTROS.map((f) => (
             <Link
               key={f.valor}
               href={f.valor === "todos" ? "/admin/membros" : `/admin/membros?filtro=${f.valor}`}
+              aria-current={filtro === f.valor ? "page" : undefined}
               className={cx(
-                "rounded-full border px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition",
-                filtro === f.valor
-                  ? "border-brand-600 bg-brand-600 text-white"
-                  : "border-borda bg-superficie text-suave hover:text-texto",
+                "flex flex-col items-center rounded-lg py-1.5 text-xs whitespace-nowrap transition",
+                filtro === f.valor ? "bg-superficie font-semibold text-texto shadow-sm ring-1 ring-borda" : "text-suave",
               )}
             >
-              {f.rotulo} <span className="opacity-70">({contagem[f.valor]})</span>
+              {f.rotulo}
+              <span className="text-[11px] font-normal text-suave tabular-nums">{contagem[f.valor]}</span>
             </Link>
           ))}
-        </div>
+        </nav>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-borda bg-superficie shadow-sm">
-        <table className="w-full min-w-[760px] text-sm">
-          <thead className="bg-fundo text-left text-xs tracking-wide whitespace-nowrap text-suave uppercase">
+      <div className="hidden flex-wrap items-center justify-between gap-3 md:flex">
+        <p className="text-sm text-suave">
+          {plural(ativos.length, "membro ativo", "membros ativos")} · {contagem.aberto} com mensalidade em aberto ·{" "}
+          <span className="font-semibold text-texto tabular-nums">{moeda(totalAberto)}</span> a receber
+        </p>
+        <nav aria-label="Filtrar membros" className="inline-flex rounded-xl border border-borda bg-fundo p-1">
+          {FILTROS.map((f) => (
+            <Link
+              key={f.valor}
+              href={f.valor === "todos" ? "/admin/membros" : `/admin/membros?filtro=${f.valor}`}
+              aria-current={filtro === f.valor ? "page" : undefined}
+              className={cx(
+                "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-sm whitespace-nowrap transition",
+                filtro === f.valor
+                  ? "bg-superficie font-medium text-texto shadow-sm ring-1 ring-borda"
+                  : "text-suave hover:text-texto",
+              )}
+            >
+              {f.rotulo} <span className="text-suave tabular-nums">{contagem[f.valor]}</span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {visiveis.length === 0 && <p className="py-10 text-center text-sm text-suave">Nenhum membro neste filtro.</p>}
+
+      {/* Celular: um cartão por membro, com a situação em destaque e as ações de administração num menu. */}
+      {visiveis.length > 0 && (
+        <ul className="space-y-3 md:hidden">
+          {visiveis.map((l) => (
+            <li
+              key={l.membro.id}
+              className={cx("rounded-2xl border border-borda bg-superficie p-4", !l.membro.ativo && "opacity-70")}
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden
+                  className={cx(
+                    "grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold",
+                    l.abertas > 0
+                      ? "bg-laranja-50 text-laranja-800 dark:bg-laranja-950/60 dark:text-laranja-200"
+                      : "bg-azul-50 text-azul-800 dark:bg-azul-950/70 dark:text-azul-200",
+                  )}
+                >
+                  {iniciais(l.membro.nome)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-1.5">
+                    <span className="truncate font-semibold">{l.membro.nome}</span>
+                    {l.membro.papel === "admin" && (
+                      <span className="shrink-0 rounded-md bg-fundo px-1.5 py-px text-[11px] font-medium text-suave">Admin</span>
+                    )}
+                    {!l.membro.ativo && (
+                      <span className="shrink-0 rounded-md bg-fundo px-1.5 py-px text-[11px] font-medium text-suave">Inativo</span>
+                    )}
+                  </p>
+                  <p className="truncate text-xs text-suave">
+                    Desde {mesAno.format(new Date(`${l.membro.created_at.slice(0, 10)}T00:00:00Z`)).replace(". de", "")}
+                    {l.membro.telefone ? ` · ${l.membro.telefone}` : ""}
+                  </p>
+                </div>
+                <MenuMembro rotulo={`Mais ações para ${l.membro.nome}`}>
+                  <AcoesMembro
+                    id={l.membro.id}
+                    papel={l.membro.papel}
+                    ativo={l.membro.ativo}
+                    euMesmo={l.membro.id === perfil.id}
+                    empilhado
+                  />
+                </MenuMembro>
+              </div>
+
+              <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-borda">
+                <div className="bg-fundo px-3 py-2.5">
+                  <dt className="text-xs text-suave">{l.abertas > 0 ? "Em aberto" : "Mensalidades"}</dt>
+                  {l.abertas > 0 ? (
+                    <dd>
+                      <p className="font-semibold text-laranja-800 tabular-nums dark:text-laranja-300">
+                        {moeda(l.valorAberto)}
+                      </p>
+                      <p className="text-xs text-suave capitalize">{l.meses.join(", ")}</p>
+                    </dd>
+                  ) : (
+                    <dd className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-300">
+                      <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden />
+                      Em dia
+                    </dd>
+                  )}
+                </div>
+                <div className="bg-fundo px-3 py-2.5">
+                  <dt className="text-xs text-suave">Total pago</dt>
+                  <dd>
+                    <p className="font-semibold tabular-nums">{moeda(l.totalPago)}</p>
+                    <p className="text-xs text-suave tabular-nums">{l.ultimo ? `último em ${data(l.ultimo)}` : "nenhum ainda"}</p>
+                  </dd>
+                </div>
+              </dl>
+
+              {(l.emAnalise > 0 || l.whatsapp) && (
+                <div className="mt-3 flex flex-col gap-2">
+                  {l.emAnalise > 0 && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center justify-between rounded-xl bg-azul-50 px-3 py-2.5 text-sm font-medium text-azul-800 transition hover:bg-azul-100 dark:bg-azul-950/70 dark:text-azul-200 dark:hover:bg-azul-900"
+                    >
+                      {plural(l.emAnalise, "comprovante para conferir", "comprovantes para conferir")}
+                      <ChevronRight className="size-4" aria-hidden />
+                    </Link>
+                  )}
+                  {l.whatsapp && (
+                    <a
+                      href={l.whatsapp}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex h-10 items-center justify-center gap-2 rounded-xl border border-borda text-sm font-semibold text-azul-700 transition hover:bg-fundo dark:text-azul-300"
+                    >
+                      <MessageCircle className="size-4" aria-hidden /> Lembrar no WhatsApp
+                    </a>
+                  )}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {/* Computador: tabela. */}
+      {visiveis.length > 0 && (
+        <table className="hidden w-full text-sm md:table">
+          <thead className="border-b border-borda text-left text-xs whitespace-nowrap text-suave">
             <tr>
-              <th className="px-4 py-3 font-semibold">Membro</th>
-              <th className="px-4 py-3 font-semibold">Mensalidades</th>
-              <th className="px-4 py-3 font-semibold">Em análise</th>
-              <th className="px-4 py-3 font-semibold">Eventos pagos</th>
-              <th className="px-4 py-3 text-right font-semibold">Total pago</th>
-              <th className="px-4 py-3 text-right font-semibold">Ações</th>
+              <th className="py-3 pr-4 font-medium">Membro</th>
+              <th className="py-3 pr-4 font-medium">Mensalidades em aberto</th>
+              <th className="py-3 pr-4 font-medium">Em análise</th>
+              <th className="py-3 pr-4 font-medium">Eventos pagos</th>
+              <th className="py-3 pr-4 text-right font-medium">Total pago</th>
+              <th className="py-3 text-right font-medium">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-borda">
-            {visiveis.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-suave">
-                  Nenhum membro neste filtro.
-                </td>
-              </tr>
-            )}
-            {visiveis.map(({ membro: m, abertas, valorAberto, emAnalise, eventosPagos, totalPago, ultimo }) => (
-              <tr key={m.id} className={cx("align-middle", !m.ativo && "opacity-60")}>
-                <td className="px-4 py-3">
-                  <p className="font-semibold whitespace-nowrap">
-                    {m.nome}
-                    {m.papel === "admin" && (
-                      <span className="ml-2 rounded-full bg-ouro-300/40 px-2 py-0.5 text-[10px] font-bold text-ouro-600 uppercase dark:text-ouro-300">
-                        Admin
-                      </span>
+            {visiveis.map((l) => (
+              <tr key={l.membro.id} className={cx("align-middle", !l.membro.ativo && "opacity-60")}>
+                <td className="py-4 pr-4">
+                  <p className="flex items-center gap-2 font-medium whitespace-nowrap">
+                    {l.membro.nome}
+                    {l.membro.papel === "admin" && (
+                      <span className="rounded-md border border-borda px-1.5 py-px text-xs font-normal text-suave">Admin</span>
                     )}
-                    {!m.ativo && <span className="ml-2 text-xs font-normal text-suave">(inativo)</span>}
+                    {!l.membro.ativo && <span className="text-xs font-normal text-suave">Inativo</span>}
                   </p>
-                  <p className="text-xs text-suave">{m.email}</p>
-                  <p className="text-xs text-suave">
-                    {m.telefone ? `${m.telefone} · ` : ""}desde {data(m.created_at.slice(0, 10))}
+                  <p className="text-xs text-suave">{l.membro.email}</p>
+                  <p className="text-xs text-suave tabular-nums">
+                    {l.membro.telefone ? `${l.membro.telefone} · ` : ""}desde {data(l.membro.created_at.slice(0, 10))}
                   </p>
                 </td>
-                <td className="px-4 py-3">
-                  {abertas === 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-brand-800 dark:bg-brand-900 dark:text-brand-100">
-                      <CheckCircle2 className="size-3.5" aria-hidden /> Em dia
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-red-800 dark:bg-red-950 dark:text-red-200">
-                      <CircleAlert className="size-3.5" aria-hidden />
-                      {abertas} em aberto · {moeda(valorAberto)}
-                    </span>
-                  )}
+                <td className="space-y-1.5 py-4 pr-4">
+                  <div>{situacao(l)}</div>
+                  {cobrar(l)}
                 </td>
-                <td className="px-4 py-3">
-                  {emAnalise > 0 ? (
+                <td className="py-4 pr-4">
+                  {l.emAnalise > 0 ? (
                     <Link
                       href="/admin"
-                      className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-amber-800 dark:bg-amber-950 dark:text-amber-200"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-azul-50 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-azul-800 tabular-nums transition hover:bg-azul-100 dark:bg-azul-950/70 dark:text-azul-200 dark:hover:bg-azul-900"
                     >
-                      <Clock3 className="size-3.5" aria-hidden /> {emAnalise}
+                      <span className="size-1.5 rounded-full bg-azul-500" aria-hidden />
+                      {l.emAnalise}
                     </Link>
                   ) : (
                     <span className="text-suave">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-suave">{eventosPagos || "—"}</td>
-                <td className="px-4 py-3 text-right whitespace-nowrap">
-                  <p className="font-medium">{moeda(totalPago)}</p>
-                  {ultimo && <p className="text-xs text-suave">último em {data(ultimo)}</p>}
+                <td className="py-4 pr-4 text-suave tabular-nums">{l.eventosPagos || "—"}</td>
+                <td className="py-4 pr-4 text-right whitespace-nowrap">
+                  <p className="font-medium tabular-nums">{moeda(l.totalPago)}</p>
+                  {l.ultimo && <p className="text-xs text-suave tabular-nums">último em {data(l.ultimo)}</p>}
                 </td>
-                <td className="px-4 py-3">
-                  <AcoesMembro id={m.id} papel={m.papel} ativo={m.ativo} euMesmo={m.id === perfil.id} />
+                <td className="py-4">
+                  <AcoesMembro id={l.membro.id} papel={l.membro.papel} ativo={l.membro.ativo} euMesmo={l.membro.id === perfil.id} />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      )}
+
       <p className="text-xs text-suave">
-        “Mensalidades” considera as mensalidades até o mês atual, a partir do mês em que o membro se cadastrou. Novos membros
-        se cadastram pelo próprio app.
+        Conta as mensalidades até o mês atual, a partir do mês em que cada membro se cadastrou. Novos membros se cadastram
+        pelo próprio app.
       </p>
     </div>
   );

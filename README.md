@@ -1,4 +1,4 @@
-# UMP · Pagamentos
+# UMP Jóquei
 
 PWA da Mocidade Presbiteriana. Os membros informam mensalidades e pagamentos de eventos enviando o comprovante, e a diretoria confere cada envio e marca como **pago** ou **não pago**.
 

@@ -28,7 +28,7 @@ export function AcoesCobranca({ id, ativa }: { id: string; ativa: boolean }) {
         </Botao>
         <Botao
           variante="fantasma"
-          className="text-red-600 dark:text-red-400"
+          className="text-red-700! dark:text-red-400!"
           disabled={pendente}
           onClick={() => {
             if (!confirm("Excluir esta cobrança definitivamente?")) return;

@@ -1,23 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Lora } from "next/font/google";
+import { Hanken_Grotesk, Montserrat } from "next/font/google";
 import { RegistrarServiceWorker } from "@/components/registrar-sw";
+import { SincronizarTema } from "@/components/tema";
+import { SCRIPT_TEMA } from "@/lib/tema";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const lora = Lora({ variable: "--font-lora", subsets: ["latin"], weight: ["500", "600", "700"] });
+// Montserrat (a letra dos cartazes da UMP) só em títulos e valores; Hanken Grotesk no restante da interface.
+const montserrat = Montserrat({ variable: "--font-montserrat", subsets: ["latin"], weight: ["600", "700", "800", "900"] });
+const hanken = Hanken_Grotesk({ variable: "--font-hanken", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: { default: "UMP · Pagamentos", template: "%s · UMP" },
-  description: "Informe mensalidades e pagamentos de eventos da Mocidade Presbiteriana.",
-  applicationName: "UMP Pagamentos",
-  appleWebApp: { capable: true, title: "UMP", statusBarStyle: "black-translucent" },
+  title: { default: "UMP Jóquei", template: "%s · UMP Jóquei" },
+  description: "Informe mensalidades e pagamentos de eventos da UMP Jóquei.",
+  applicationName: "UMP Jóquei",
+  appleWebApp: { capable: true, title: "UMP Jóquei", statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#155637" },
-    { media: "(prefers-color-scheme: dark)", color: "#07130d" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f5f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#060a22" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -26,10 +29,20 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${lora.variable} h-full antialiased`}>
+    <html
+      lang="pt-BR"
+      data-tema="claro"
+      suppressHydrationWarning
+      className={`${montserrat.variable} ${hanken.variable} h-full antialiased`}
+    >
+      <head>
+        {/* Aplica o tema salvo antes da primeira pintura. */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body className="min-h-full font-sans">
         {children}
         <RegistrarServiceWorker />
+        <SincronizarTema />
       </body>
     </html>
   );

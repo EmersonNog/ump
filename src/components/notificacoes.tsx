@@ -96,11 +96,13 @@ export function Notificacoes() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200">
-          {estado === "ativo" ? <Bell className="size-5" aria-hidden /> : <BellOff className="size-5" aria-hidden />}
-        </div>
+        {estado === "ativo" ? (
+          <Bell className="size-5 shrink-0 text-suave" aria-hidden />
+        ) : (
+          <BellOff className="size-5 shrink-0 text-suave" aria-hidden />
+        )}
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">Notificações</p>
+          <p className="font-medium">Notificações</p>
           <p className="text-sm text-suave">{textos[estado]}</p>
         </div>
         {(estado === "ativo" || estado === "inativo") && (
@@ -113,7 +115,7 @@ export function Notificacoes() {
             onClick={estado === "ativo" ? desativar : ativar}
             className={
               "relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-60 " +
-              (estado === "ativo" ? "bg-brand-600" : "bg-slate-300 dark:bg-slate-700")
+              (estado === "ativo" ? "bg-laranja-500" : "bg-slate-300 dark:bg-slate-700")
             }
           >
             <span
@@ -122,7 +124,7 @@ export function Notificacoes() {
                 (estado === "ativo" ? "left-[1.375rem]" : "left-0.5")
               }
             >
-              {ocupado && <Loader2 className="size-3.5 animate-spin text-brand-600" aria-hidden />}
+              {ocupado && <Loader2 className="size-3.5 animate-spin text-suave" aria-hidden />}
             </span>
           </button>
         )}

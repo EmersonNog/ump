@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { ExternalLink, Receipt } from "lucide-react";
-import { Cartao, Selo, Titulo, Vazio } from "@/components/ui";
+import { ExternalLink } from "lucide-react";
+import { CabecalhoSecao, Selo, Titulo, Vazio } from "@/components/ui";
 import { exigirSessao } from "@/lib/auth";
 import { tituloCobranca } from "@/lib/cobrancas";
 import { data, dataHoraCurta, moeda } from "@/lib/format";
 import { BotaoCancelar } from "./botao-cancelar";
 
 export const metadata: Metadata = { title: "Histórico" };
+
+const fuso = "America/Sao_Paulo";
+const diaSP = new Intl.DateTimeFormat("pt-BR", { day: "numeric", timeZone: fuso });
+const mesCurtoSP = new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: fuso });
+const mesAnoSP = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric", timeZone: fuso });
+
+const capitalizar = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1);
 
 export default async function PaginaHistorico() {
   const { supabase, perfil } = await exigirSessao();
@@ -28,60 +35,78 @@ export default async function PaginaHistorico() {
 
   const totalPago = lista.filter((p) => p.status === "pago").reduce((s, p) => s + Number(p.valor), 0);
 
+  // Agrupa por mês de envio, mantendo a ordem (mais recente primeiro).
+  const grupos = new Map<string, typeof lista>();
+  for (const p of lista) {
+    const mes = capitalizar(mesAnoSP.format(new Date(p.created_at)));
+    grupos.set(mes, [...(grupos.get(mes) ?? []), p]);
+  }
+
   return (
-    <>
+    <div className="mx-auto max-w-3xl">
       <Titulo subtitulo={`Total confirmado: ${moeda(totalPago)}`}>Meus pagamentos</Titulo>
 
       {lista.length === 0 ? (
-        <Vazio icone={<Receipt className="size-6" />} titulo="Nenhum pagamento informado ainda">
+        <Vazio titulo="Nenhum pagamento informado ainda">
           Quando você enviar um comprovante, ele aparece aqui.
         </Vazio>
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
-          {lista.map((p) => (
-            <li key={p.id}>
-              <Cartao className="h-full">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold">{p.cobranca ? tituloCobranca(p.cobranca) : "Cobrança removida"}</p>
-                    <p className="text-sm text-suave">
-                      {moeda(p.valor)} · pago em {data(p.data_pagamento)}
-                    </p>
-                  </div>
-                  <Selo situacao={p.status} />
-                </div>
+        <div className="space-y-10">
+          {[...grupos].map(([mes, itens]) => (
+            <section key={mes}>
+              <CabecalhoSecao titulo={mes} detalhe={itens.length} />
+              <ul className="divide-y divide-borda">
+                {itens.map((p) => {
+                  const enviado = new Date(p.created_at);
+                  const link = linkPorCaminho.get(p.comprovante_path);
+                  return (
+                    <li key={p.id} className="flex items-start gap-4 py-4">
+                      <div className="w-10 shrink-0 text-center leading-tight">
+                        <p className="text-[11px] font-semibold text-suave">
+                          {capitalizar(mesCurtoSP.format(enviado).replace(".", ""))}
+                        </p>
+                        <p className="text-lg font-semibold tabular-nums">{diaSP.format(enviado)}</p>
+                      </div>
 
-                {p.status === "nao_pago" && p.motivo && (
-                  <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/50 dark:text-red-200">
-                    {p.motivo}
-                  </p>
-                )}
-                {p.observacao && <p className="mt-3 text-sm text-suave">“{p.observacao}”</p>}
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-2 leading-snug font-medium">
+                          {p.cobranca ? tituloCobranca(p.cobranca) : "Cobrança removida"}
+                        </p>
+                        <p className="truncate text-sm text-suave">Data do pagamento: {data(p.data_pagamento)}</p>
+                        {p.status === "nao_pago" && p.motivo && (
+                          <p className="mt-1 text-sm break-words text-red-700 dark:text-red-400">Não pago: {p.motivo}</p>
+                        )}
+                        {p.observacao && (
+                          <p className="mt-1 line-clamp-2 text-sm break-words text-suave">“{p.observacao}”</p>
+                        )}
+                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-suave">
+                          {p.revisado_em && <span>Conferido em {dataHoraCurta(p.revisado_em)}</span>}
+                          {link && (
+                            <a
+                              href={link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 font-medium text-texto transition hover:text-laranja-600 dark:hover:text-laranja-400"
+                            >
+                              Ver comprovante <ExternalLink className="size-3" aria-hidden />
+                            </a>
+                          )}
+                          {p.status === "em_analise" && <BotaoCancelar id={p.id} />}
+                        </div>
+                      </div>
 
-                <div className="mt-3 flex items-center justify-between gap-3 border-t border-borda pt-3 text-xs text-suave">
-                  <span>
-                    Enviado {dataHoraCurta(p.created_at)}
-                    {p.revisado_em && ` · conferido ${dataHoraCurta(p.revisado_em)}`}
-                  </span>
-                  <span className="flex items-center gap-3">
-                    {p.status === "em_analise" && <BotaoCancelar id={p.id} />}
-                    {linkPorCaminho.get(p.comprovante_path) && (
-                      <a
-                        href={linkPorCaminho.get(p.comprovante_path)!}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 font-semibold text-brand-600 dark:text-brand-300"
-                      >
-                        Comprovante <ExternalLink className="size-3" aria-hidden />
-                      </a>
-                    )}
-                  </span>
-                </div>
-              </Cartao>
-            </li>
+                      <div className="flex shrink-0 flex-col items-end gap-1.5">
+                        <span className="font-medium tabular-nums">{moeda(p.valor)}</span>
+                        <Selo situacao={p.status} />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
-    </>
+    </div>
   );
 }

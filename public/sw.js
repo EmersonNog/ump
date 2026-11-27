@@ -1,8 +1,14 @@
 /* Service worker do UMP Pagamentos: offline + notificações push. */
-const VERSAO = "ump-v1";
+const VERSAO = "ump-v3";
 const PAGINA_OFFLINE = "/offline";
 const DESENVOLVIMENTO = new URL(self.location.href).searchParams.has("dev");
-const PRECACHE = [PAGINA_OFFLINE, "/icons/logo.svg", "/icons/icon-192.png", "/icons/badge-96.png"];
+const PRECACHE = [
+  PAGINA_OFFLINE,
+  "/marca/ump-emblema.png",
+  "/marca/ump-emblema-escuro.png",
+  "/icons/icon-192.png",
+  "/icons/badge-96.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

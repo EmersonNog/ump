@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Camera, FileText, Loader2, RefreshCcw } from "lucide-react";
-import { Aviso, Botao, Campo, Entrada, AreaTexto } from "@/components/ui";
+import { Aviso, Botao, Campo, Entrada, AreaTexto, cx } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 import { registrarPagamento } from "../../actions";
 
@@ -112,10 +112,10 @@ export function FormComprovante({
       {erro && <Aviso>{erro}</Aviso>}
 
       <label
-        className={
-          "relative flex min-h-44 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed transition " +
-          (arquivo ? "border-brand-400 bg-superficie" : "border-borda bg-superficie hover:border-brand-300")
-        }
+        className={cx(
+          "relative flex min-h-44 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-borda transition hover:border-suave/60 focus-within:border-laranja-300 focus-within:ring-4 focus-within:ring-laranja-500/10 dark:focus-within:border-laranja-700",
+          arquivo ? "bg-superficie" : "bg-fundo",
+        )}
       >
         <input
           type="file"
@@ -129,23 +129,21 @@ export function FormComprovante({
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={previa} alt="Prévia do comprovante" className="max-h-80 w-full object-contain" />
-            <span className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-3 py-1 text-xs text-white">
+            <span className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-lg border border-borda bg-superficie px-2.5 py-1 text-xs font-medium text-texto">
               <RefreshCcw className="size-3" aria-hidden /> Trocar
             </span>
           </>
         ) : arquivo ? (
           <span className="flex flex-col items-center gap-2 p-6 text-center">
-            <FileText className="size-10 text-brand-500" aria-hidden />
-            <span className="text-sm font-semibold break-all">{arquivo.name}</span>
-            <span className="text-xs text-suave">Toque para trocar</span>
+            <FileText className="size-6 text-suave" aria-hidden />
+            <span className="text-sm font-medium break-all">{arquivo.name}</span>
+            <span className="text-sm text-suave">Toque para trocar</span>
           </span>
         ) : (
           <span className="flex flex-col items-center gap-2 p-6 text-center">
-            <span className="grid size-14 place-items-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200">
-              <Camera className="size-7" aria-hidden />
-            </span>
-            <span className="font-semibold">Anexar comprovante</span>
-            <span className="text-xs text-suave">Foto, print ou PDF · até 5 MB</span>
+            <Camera className="size-6 text-suave" aria-hidden />
+            <span className="text-sm font-medium">Anexar comprovante</span>
+            <span className="text-sm text-suave">Foto, print ou PDF, até 5 MB</span>
           </span>
         )}
       </label>

@@ -2,9 +2,20 @@
 
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
-import { cx } from "./ui";
+import { Botao } from "./ui";
 
-export function CopiarPix({ texto, rotulo = "Copiar", grande = false }: { texto: string; rotulo?: string; grande?: boolean }) {
+/** Copia um texto (Pix copia e cola ou chave). `descricao` diz o que é copiado para leitores de tela. */
+export function CopiarPix({
+  texto,
+  rotulo = "Copiar",
+  descricao,
+  grande = false,
+}: {
+  texto: string;
+  rotulo?: string;
+  descricao?: string;
+  grande?: boolean;
+}) {
   const [copiado, setCopiado] = useState(false);
 
   async function copiar() {
@@ -15,16 +26,20 @@ export function CopiarPix({ texto, rotulo = "Copiar", grande = false }: { texto:
   }
 
   return (
-    <button
-      type="button"
-      onClick={copiar}
-      className={cx(
-        "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-ouro-400 font-bold text-brand-950 transition active:scale-95",
-        grande ? "h-11 w-full rounded-xl px-4 text-sm" : "h-9 px-3 text-xs",
-      )}
-    >
-      {copiado ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
-      {copiado ? "Copiado!" : rotulo}
-    </button>
+    <>
+      <Botao
+        type="button"
+        onClick={copiar}
+        aria-label={descricao}
+        variante={grande ? "primario" : "secundario"}
+        className={grande ? "w-full" : "shrink-0"}
+      >
+        {copiado ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+        {copiado ? "Copiado" : rotulo}
+      </Botao>
+      <span className="sr-only" aria-live="polite">
+        {copiado ? `${descricao ?? rotulo}: copiado` : ""}
+      </span>
+    </>
   );
 }

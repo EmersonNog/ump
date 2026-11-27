@@ -38,14 +38,16 @@ export function Navegacao({
             key={href}
             href={href}
             className={cx(
-              "relative inline-flex h-10 items-center gap-2 rounded-xl px-3.5 text-sm font-medium transition",
-              ativo(pathname, href) ? "bg-white/15 text-white" : "text-brand-100 hover:bg-white/10 hover:text-white",
+              "relative inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-medium transition",
+              ativo(pathname, href)
+                ? "bg-laranja-100 font-semibold text-laranja-800 dark:bg-laranja-950 dark:text-laranja-300"
+                : "text-suave hover:bg-laranja-50 hover:text-texto dark:hover:bg-azul-950",
             )}
           >
             <Icone className="size-4" aria-hidden />
             {rotulo}
             {!!contador && (
-              <span className="rounded-full bg-ouro-400 px-1.5 text-xs font-bold text-brand-950">{contador}</span>
+              <span className="rounded-full bg-azul-600 px-1.5 text-[10px] font-bold text-white">{contador}</span>
             )}
           </Link>
         ))}
@@ -67,19 +69,14 @@ export function Navegacao({
                 href={href}
                 aria-current={selecionado ? "page" : undefined}
                 className={cx(
-                  "flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium transition",
-                  selecionado ? "text-brand-600 dark:text-brand-300" : "text-suave",
+                  "flex h-16 flex-col items-center justify-center gap-1 text-[11px] transition",
+                  selecionado ? "font-semibold text-laranja-700 dark:text-laranja-400" : "font-medium text-suave",
                 )}
               >
-                <span
-                  className={cx(
-                    "relative grid h-8 w-14 place-items-center rounded-full transition",
-                    selecionado && "bg-brand-100 dark:bg-brand-900",
-                  )}
-                >
-                  <Icone className="size-5" aria-hidden />
+                <span className="relative">
+                  <Icone className="size-[22px]" strokeWidth={selecionado ? 2.4 : 1.8} aria-hidden />
                   {!!contador && (
-                    <span className="absolute -top-1 right-1.5 min-w-5 rounded-full bg-ouro-400 px-1 text-center text-[10px] leading-5 font-bold text-brand-950">
+                    <span className="absolute -top-1.5 -right-3 min-w-5 rounded-full bg-azul-600 px-1 text-center text-[10px] leading-5 font-bold text-white">
                       {contador > 99 ? "99+" : contador}
                     </span>
                   )}

@@ -11,7 +11,12 @@ export type Resultado = { erro?: string; sucesso?: string };
 
 type Status = "em_analise" | "pago" | "nao_pago";
 
-export async function revisarPagamento(id: string, status: Status, motivo: string): Promise<Resultado> {
+/** Além do resultado, devolve o próximo comprovante em análise (mais antigo primeiro) para seguir conferindo. */
+export async function revisarPagamento(
+  id: string,
+  status: Status,
+  motivo: string,
+): Promise<Resultado & { proximo?: string | null }> {
   const { supabase } = await exigirAdmin();
   const motivoLimpo = motivo.trim().slice(0, 500);
   if (status === "nao_pago" && !motivoLimpo) return { erro: "Informe o motivo para o membro entender o que corrigir." };
@@ -43,7 +48,20 @@ export async function revisarPagamento(id: string, status: Status, motivo: strin
   }
 
   revalidatePath("/", "layout");
-  return { sucesso: status === "pago" ? "Pagamento confirmado." : status === "nao_pago" ? "Marcado como não pago." : "Voltou para análise." };
+
+  const { data: proximo } = await supabase
+    .from("pagamentos")
+    .select("id")
+    .eq("status", "em_analise")
+    .neq("id", id)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  return {
+    sucesso: status === "pago" ? "Pagamento confirmado." : status === "nao_pago" ? "Marcado como não pago." : "Voltou para análise.",
+    proximo: proximo?.id ?? null,
+  };
 }
 
 export async function criarEvento(_: Resultado, form: FormData): Promise<Resultado> {

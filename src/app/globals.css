@@ -1,26 +1,39 @@
 @import "tailwindcss";
 
-/* Identidade inspirada na Igreja Presbiteriana do Brasil: verde da sarça + dourado da chama. */
+/* Variante dark: controlada pelo atributo data-tema (botão no app), não só pelo sistema. */
+@custom-variant dark (&:where([data-tema="escuro"], [data-tema="escuro"] *));
+
+/* Identidade UMP Jóquei: laranja vibrante + azul royal + branco, tipografia geométrica em caixa alta. */
 @theme {
-  --color-brand-50: #eef6f1;
-  --color-brand-100: #d5eadc;
-  --color-brand-200: #a9d3b8;
-  --color-brand-300: #74b58e;
-  --color-brand-400: #439a68;
-  --color-brand-500: #2a8257;
-  --color-brand-600: #1d6b45;
-  --color-brand-700: #155637;
-  --color-brand-800: #10432b;
-  --color-brand-900: #0b3220;
-  --color-brand-950: #061d12;
+  --color-laranja-50: #fff4eb;
+  --color-laranja-100: #ffe5d1;
+  --color-laranja-200: #ffc8a1;
+  --color-laranja-300: #ffa266;
+  --color-laranja-400: #ff8233;
+  --color-laranja-500: #ff6600;
+  --color-laranja-600: #e85700;
+  --color-laranja-700: #c24600;
+  --color-laranja-800: #9a3a07;
+  --color-laranja-900: #7c320b;
+  --color-laranja-950: #431604;
 
-  --color-ouro-300: #f0d48a;
-  --color-ouro-400: #e0b84b;
-  --color-ouro-500: #c99a2e;
-  --color-ouro-600: #a67b1f;
+  --color-azul-50: #eef1ff;
+  --color-azul-100: #dde3ff;
+  --color-azul-200: #bac6ff;
+  --color-azul-300: #8c9eff;
+  --color-azul-400: #5a73f7;
+  --color-azul-500: #2f4deb;
+  --color-azul-600: #0027ca;
+  --color-azul-700: #0020a6;
+  --color-azul-800: #031b82;
+  --color-azul-900: #081866;
+  --color-azul-950: #060e3d;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-lora), ui-serif, Georgia, serif;
+  --color-pessego: #f1a460;
+
+  /* Interface em Hanken Grotesk; Montserrat (letra dos cartazes) reservada para títulos e valores. */
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-montserrat), var(--font-hanken), ui-sans-serif, sans-serif;
 
   --animate-entrar: entrar 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   @keyframes entrar {
@@ -33,6 +46,13 @@
       transform: none;
     }
   }
+
+  --animate-girar: girar 40s linear infinite;
+  @keyframes girar {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 }
 
 @theme inline {
@@ -43,24 +63,24 @@
   --color-borda: var(--borda);
 }
 
+/* Neutros frios (puxados do azul da marca), não creme: o laranja e o azul é que carregam a identidade. */
 :root {
-  --fundo: #f4f7f5;
+  --fundo: #f4f5f8;
   --superficie: #ffffff;
-  --texto: #10231a;
-  --suave: #5b6e64;
-  --borda: #dfe7e2;
+  --texto: #0b1033;
+  --suave: #555b78;
+  --borda: #e2e4ec;
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fundo: #07130d;
-    --superficie: #0e1f17;
-    --texto: #e8f1ec;
-    --suave: #93a89c;
-    --borda: #1e3328;
-    color-scheme: dark;
-  }
+/* Tema escuro escolhido no app (ou "Automático", seguindo o sistema): <html data-tema="escuro">. */
+[data-tema="escuro"] {
+  --fundo: #060a22;
+  --superficie: #0e1436;
+  --texto: #f2f0fa;
+  --suave: #9da3c7;
+  --borda: #1e2650;
+  color-scheme: dark;
 }
 
 html {
@@ -71,6 +91,32 @@ body {
   background: var(--fundo);
   color: var(--texto);
   overscroll-behavior-y: none;
+}
+
+/* Marca "ump·jóquei" em anel: SVG usado como máscara, herda a cor do texto (bg-current). */
+.marca-anel {
+  display: inline-block;
+  background-color: currentColor;
+  mask: url("/icons/anel.svg") center / contain no-repeat;
+}
+
+/* Gradiente suave (pastel) inspirado nos cartazes: pêssego, laranja claro e azul claro. */
+.malha-suave {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(55% 80% at 100% 0%, var(--color-azul-100) 0%, transparent 70%),
+    radial-gradient(60% 80% at 0% 100%, color-mix(in oklab, var(--color-pessego) 35%, transparent) 0%, transparent 70%),
+    radial-gradient(70% 90% at 15% 10%, var(--color-laranja-100) 0%, transparent 75%),
+    var(--superficie);
+}
+
+[data-tema="escuro"] .malha-suave {
+  background:
+    radial-gradient(55% 80% at 100% 0%, color-mix(in oklab, var(--color-azul-700) 45%, transparent) 0%, transparent 70%),
+    radial-gradient(60% 80% at 0% 100%, color-mix(in oklab, var(--color-laranja-800) 35%, transparent) 0%, transparent 70%),
+    var(--superficie);
 }
 
 /* Áreas seguras (notch / barra de gestos) quando instalado. */
@@ -92,7 +138,42 @@ body {
   }
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-brand-500);
-  outline-offset: 2px;
+/* Em @layer base para que utilitários (ex.: focus-visible:outline-none) possam sobrescrever. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-laranja-500);
+    outline-offset: 2px;
+  }
+
+  /* Superfícies do navegador no tom da marca. */
+  ::selection {
+    background: color-mix(in oklab, var(--color-laranja-400) 35%, transparent);
+  }
+  html {
+    caret-color: var(--color-laranja-500);
+    accent-color: var(--color-laranja-500);
+    scrollbar-color: color-mix(in oklab, var(--suave) 45%, transparent) transparent;
+  }
+  /* No computador a tela tem mais espaço: tudo (texto e espaçamentos em rem) cresce junto.
+     Media queries usam o tamanho padrão do navegador, então os breakpoints não mudam. O celular fica como está. */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 112.5%;
+    }
+  }
+  @media (min-width: 1536px) {
+    html {
+      font-size: 125%;
+    }
+  }
+}
+
+/* Troca de tema: o novo tema se revela num círculo a partir do botão (animação feita em lib/tema.ts). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  z-index: 1;
 }

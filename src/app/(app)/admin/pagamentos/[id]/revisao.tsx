@@ -27,10 +27,14 @@ export function Revisao({ id, status, motivoAtual }: { id: string; status: Statu
         return;
       }
       setRecusando(false);
-      setMensagem({ tipo: "sucesso", texto: r.sucesso ?? "" });
       navigator.vibrate?.(30);
-      if (novo !== "em_analise" && status === "em_analise") router.push("/admin");
-      else router.refresh();
+      // Decisão tomada a partir de "em análise": segue para o próximo da fila, levando a confirmação junto.
+      if (novo !== "em_analise" && status === "em_analise") {
+        router.push(r.proximo ? `/admin/pagamentos/${r.proximo}?feito=${novo}` : `/admin?feito=${novo}`);
+        return;
+      }
+      setMensagem({ tipo: "sucesso", texto: r.sucesso ?? "" });
+      router.refresh();
     });
   }
 
@@ -74,7 +78,7 @@ export function Revisao({ id, status, motivoAtual }: { id: string; status: Statu
               variante="secundario"
               onClick={() => setRecusando(true)}
               disabled={ocupado}
-              className={status === "pago" ? "col-span-2 text-red-600 dark:text-red-400" : "text-red-600 dark:text-red-400"}
+              className={status === "pago" ? "col-span-2 text-red-700 dark:text-red-400" : "text-red-700 dark:text-red-400"}
             >
               <X className="size-4" aria-hidden /> Não pago
             </Botao>

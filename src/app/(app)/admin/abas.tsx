@@ -13,8 +13,8 @@ const ABAS = [
 export function AbasAdmin() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Administração" className="-mx-4 mb-6 overflow-x-auto px-4 [scrollbar-width:none]">
-      <ul className="flex w-max gap-1 rounded-2xl border border-borda bg-superficie p-1">
+    <nav aria-label="Administração" className="-mx-4 mb-8 overflow-x-auto px-4 [scrollbar-width:none]">
+      <ul className="flex min-w-max gap-6 border-b border-borda">
         {ABAS.map(({ href, rotulo }) => {
           const ativa = href === "/admin" ? pathname === "/admin" || pathname.startsWith("/admin/pagamentos") : pathname.startsWith(href);
           return (
@@ -23,8 +23,8 @@ export function AbasAdmin() {
                 href={href}
                 aria-current={ativa ? "page" : undefined}
                 className={cx(
-                  "inline-flex h-9 items-center rounded-xl px-4 text-sm font-medium whitespace-nowrap transition",
-                  ativa ? "bg-brand-600 text-white shadow-sm" : "text-suave hover:text-texto",
+                  "-mb-px inline-flex h-11 items-center border-b-2 text-sm font-medium whitespace-nowrap transition",
+                  ativa ? "border-laranja-500 text-texto" : "border-transparent text-suave hover:text-texto",
                 )}
               >
                 {rotulo}

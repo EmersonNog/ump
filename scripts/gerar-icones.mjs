@@ -1,34 +1,36 @@
-// Gera os ícones do PWA a partir do desenho da sarça ardente.
-// Uso: node scripts/gerar-icones.mjs
-import { mkdir, writeFile } from "node:fs/promises";
+// Gera a marca "ump·jóquei" em anel (texto convertido em curvas) e os ícones do PWA.
+// Uso: npm run icones
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import opentype from "opentype.js";
 import sharp from "sharp";
 
-const CHAMA_EXTERNA =
-  "M32 7c4 10 14 15 14 27 0 9-6 16-14 16s-14-7-14-16c0-7 4-11 7-15 0 6 3 9 5 9-2-8 0-14 2-21z";
-const CHAMA_INTERNA =
-  "M32 25c3 5 7 8 7 13 0 5-3 9-7 9s-7-4-7-8c0-4 3-6 4-9 1 3 2 4 3 4-1-3-1-6 0-9z";
-const ARBUSTO = "M13 50c6-4 12 2 19-1 7 3 13-3 19 1-4 5-11 7-19 7s-15-2-19-7z";
+const LARANJA = "#FF6600";
+const fonte = opentype.parse((await readFile(new URL("./fontes/Montserrat-Bold.ttf", import.meta.url))).buffer);
 
-/** Desenho em viewBox 64×64. `escala` encolhe o símbolo para a zona segura (maskable). */
-function svg({ tamanho, fundo = true, raio = 14, escala = 1, monocromatico = false }) {
+/** Anel de texto centrado em (32, 32), raio de base `raio`, no viewBox 64×64. */
+function anel({ raio = 19, tamanho = 10.6, texto = "ump·jóquei·ump·jóquei·" } = {}) {
+  const larguras = [...texto].map((c) => fonte.getAdvanceWidth(c, tamanho));
+  const total = larguras.reduce((a, b) => a + b, 0);
+  const circunferencia = 2 * Math.PI * raio;
+  const espaco = (circunferencia - total) / texto.length; // espaçamento extra para fechar o círculo
+  let percorrido = 0;
+  const caminhos = [...texto].map((c, i) => {
+    const centro = percorrido + larguras[i] / 2;
+    percorrido += larguras[i] + espaco;
+    const graus = (centro / circunferencia) * 360 - 90; // começa no topo-esquerda, como nos cartazes
+    const d = fonte.getPath(c, -larguras[i] / 2, 0, tamanho).toPathData(2);
+    return `<path d="${d}" transform="translate(32 32) rotate(${graus.toFixed(2)}) translate(0 ${-raio})"/>`;
+  });
+  return caminhos.join("");
+}
+
+const ANEL = anel();
+
+function svg({ px, fundo = LARANJA, raio = 14, escala = 1, cor = "#fff" }) {
   const t = (64 - 64 * escala) / 2;
-  const desenho = monocromatico
-    ? `<path d="${CHAMA_EXTERNA}" fill="#fff"/><path d="${ARBUSTO}" fill="#fff"/>`
-    : `<path d="${CHAMA_EXTERNA}" fill="url(#chama)"/>
-       <path d="${CHAMA_INTERNA}" fill="#fff6d8" opacity=".9"/>
-       <path d="${ARBUSTO}" fill="#74b58e"/>`;
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${tamanho}" height="${tamanho}" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="fundo" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1d6b45"/><stop offset="1" stop-color="#0b3220"/>
-    </linearGradient>
-    <linearGradient id="chama" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#f0d48a"/><stop offset="1" stop-color="#c99a2e"/>
-    </linearGradient>
-  </defs>
-  ${fundo ? `<rect width="64" height="64" rx="${raio}" fill="url(#fundo)"/>` : ""}
-  <g transform="translate(${t} ${t}) scale(${escala})">${desenho}</g>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${px}" height="${px}" viewBox="0 0 64 64">
+  ${fundo ? `<rect width="64" height="64" rx="${raio}" fill="${fundo}"/>` : ""}
+  <g transform="translate(${t} ${t}) scale(${escala})" fill="${cor}">${ANEL}</g>
 </svg>`;
 }
 
@@ -36,12 +38,13 @@ const png = (opcoes, destino) => sharp(Buffer.from(svg(opcoes))).png().toFile(de
 
 await mkdir("public/icons", { recursive: true });
 await Promise.all([
-  png({ tamanho: 192 }, "public/icons/icon-192.png"),
-  png({ tamanho: 512 }, "public/icons/icon-512.png"),
-  png({ tamanho: 512, raio: 0, escala: 0.72 }, "public/icons/maskable-512.png"),
-  png({ tamanho: 96, fundo: false, monocromatico: true }, "public/icons/badge-96.png"),
-  png({ tamanho: 180, raio: 0, escala: 0.86 }, "src/app/apple-icon.png"),
-  writeFile("src/app/icon.svg", svg({ tamanho: 64 })),
-  writeFile("public/icons/logo.svg", svg({ tamanho: 64 })),
+  png({ px: 192, escala: 0.92 }, "public/icons/icon-192.png"),
+  png({ px: 512, escala: 0.92 }, "public/icons/icon-512.png"),
+  png({ px: 512, raio: 0, escala: 0.74 }, "public/icons/maskable-512.png"),
+  png({ px: 96, fundo: null, escala: 1.05 }, "public/icons/badge-96.png"),
+  png({ px: 180, raio: 0, escala: 0.86 }, "src/app/apple-icon.png"),
+  writeFile("src/app/icon.svg", svg({ px: 64, escala: 0.92 })),
+  // Anel sem fundo: usado como máscara CSS, então pode ter qualquer cor no app.
+  writeFile("public/icons/anel.svg", svg({ px: 64, fundo: null, cor: "#000" })),
 ]);
 console.log("Ícones gerados.");
