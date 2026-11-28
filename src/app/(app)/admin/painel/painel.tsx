@@ -292,7 +292,7 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
           </div>
         </Bloco>
         <Bloco titulo="Saldo acumulado" detalhe={meses.length ? `${rotuloMes(meses[0].m)} a ${rotuloMes(meses[meses.length - 1].m)}` : undefined}>
-          <SaldoAcumulado meses={meses} />
+          <SaldoAcumulado meses={meses} selecionado={f.mes} aoEscolher={(m) => alternar("mes", m)} />
         </Bloco>
       </div>
 
@@ -532,33 +532,196 @@ function Legenda({ cor, children }: { cor: string; children: React.ReactNode }) 
   );
 }
 
-function SaldoAcumulado({ meses }: { meses: { m: string; e: number; s: number }[] }) {
+/** Saldo acumulado mês a mês. Passe o mouse/dedo para ver o mês; toque para filtrar o painel por ele. */
+function SaldoAcumulado({
+  meses,
+  selecionado,
+  aoEscolher,
+}: {
+  meses: { m: string; e: number; s: number }[];
+  selecionado: string;
+  aoEscolher: (m: string) => void;
+}) {
+  const [ativo, setAtivo] = useState<number | null>(null);
+  const antesDoToque = useRef<number | null>(null);
   if (!meses.length) return <p className="py-10 text-center text-sm text-suave">Sem dados neste filtro.</p>;
+
   const pontos = meses.reduce<number[]>((acc, x) => [...acc, (acc.at(-1) ?? 0) + x.e - x.s], []);
-  const [L, A, M] = [320, 150, 10];
-  const menor = Math.min(0, ...pontos);
-  const maior = Math.max(0, ...pontos);
-  const X = (i: number) => M + (meses.length > 1 ? (i * (L - 2 * M)) / (meses.length - 1) : (L - 2 * M) / 2);
-  const Y = (v: number) => A - M - ((v - menor) / (maior - menor || 1)) * (A - 2 * M);
-  const final = pontos[pontos.length - 1];
+  const [L, A, ME, MD, MT, MB] = [600, 230, 64, 14, 14, 26];
+  const bruto = [Math.min(0, ...pontos), Math.max(0, ...pontos)];
+  // Escala "redonda" para as linhas de grade.
+  const passo = (() => {
+    const alvo = (bruto[1] - bruto[0] || 1) / 4;
+    const base = 10 ** Math.floor(Math.log10(alvo));
+    return [1, 2, 2.5, 5, 10].map((k) => k * base).find((k) => k >= alvo) ?? alvo;
+  })();
+  const menor = Math.floor(bruto[0] / passo) * passo;
+  const maior = Math.ceil(bruto[1] / passo) * passo || passo;
+  const grade = Array.from({ length: Math.round((maior - menor) / passo) + 1 }, (_, i) => menor + i * passo);
+  const X = (i: number) => ME + (meses.length > 1 ? (i * (L - ME - MD)) / (meses.length - 1) : (L - ME - MD) / 2);
+  const Y = (v: number) => MT + (1 - (v - menor) / (maior - menor || 1)) * (A - MT - MB);
+  const linha = pontos.map((v, i) => `${X(i)},${Y(v)}`).join(" ");
+  const curto = (v: number) => (Math.abs(v) >= 1000 ? `${(v / 1000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} mil` : String(Math.round(v)));
+
+  const indice = ativo ?? (selecionado ? meses.findIndex((x) => x.m === selecionado) : -1);
+  const foco = indice >= 0 ? indice : pontos.length - 1;
+  const iMaior = pontos.indexOf(Math.max(...pontos));
+  const iMenor = pontos.indexOf(Math.min(...pontos));
+  const mes = meses[foco];
+  const resultado = mes.e - mes.s;
+  const cor = (v: number) => (v < 0 ? "text-red-700 dark:text-red-400" : "text-emerald-700 dark:text-emerald-400");
+  // Muda a chave quando os dados mudam, para a linha se desenhar de novo.
+  const chave = `${meses[0].m}-${meses.length}-${Math.round(pontos.at(-1) ?? 0)}`;
+
+  function mesSob(e: React.PointerEvent<HTMLDivElement>) {
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * L;
+    let melhor = 0;
+    for (let i = 1; i < meses.length; i++) if (Math.abs(X(i) - x) < Math.abs(X(melhor) - x)) melhor = i;
+    return melhor;
+  }
+
+  // Mouse: passar mostra, clicar filtra. Toque: o 1º toque mostra o mês; tocar de novo no mesmo mês filtra.
+  function tocar(e: React.PointerEvent<HTMLDivElement>) {
+    const i = mesSob(e);
+    if (e.pointerType === "mouse" || antesDoToque.current === i) aoEscolher(meses[i].m);
+    setAtivo(i);
+  }
+
   return (
     <div>
-      <svg viewBox={`0 0 ${L} ${A}`} className="w-full" role="img" aria-label={`Saldo final ${moeda(final)}`}>
-        <line x1="0" x2={L} y1={Y(0)} y2={Y(0)} stroke="var(--borda)" strokeDasharray="3 3" />
-        <polygon
-          points={`${X(0)},${Y(0)} ${pontos.map((v, i) => `${X(i)},${Y(v)}`).join(" ")} ${X(pontos.length - 1)},${Y(0)}`}
-          fill="#0027CA"
-          opacity="0.08"
-        />
-        <polyline points={pontos.map((v, i) => `${X(i)},${Y(v)}`).join(" ")} fill="none" stroke="#0027CA" strokeWidth="2" strokeLinejoin="round" />
-        {pontos.map((v, i) => (
-          <circle key={meses[i].m} cx={X(i)} cy={Y(v)} r="3" fill={v < 0 ? "#dc2626" : "#0027CA"}>
-            <title>{`${rotuloMes(meses[i].m)} · saldo acumulado ${moeda(v)}`}</title>
-          </circle>
-        ))}
-      </svg>
+      {/* Resumo do mês em foco (o último, o escolhido ou o que está sob o dedo) */}
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+        <div>
+          <p className="text-xs text-suave">
+            Saldo em {rotuloMes(mes.m)}
+            {indice < 0 && " (final)"}
+          </p>
+          <p className={cx("font-display text-2xl font-bold tracking-tight tabular-nums", cor(pontos[foco]))}>{moeda(pontos[foco])}</p>
+        </div>
+        <dl className="flex gap-4 text-xs tabular-nums">
+          <div>
+            <dt className="text-suave">Entrou</dt>
+            <dd className="font-semibold text-emerald-700 dark:text-emerald-400">{moeda(mes.e)}</dd>
+          </div>
+          <div>
+            <dt className="text-suave">Saiu</dt>
+            <dd className="font-semibold text-red-700 dark:text-red-400">{moeda(mes.s)}</dd>
+          </div>
+          <div>
+            <dt className="text-suave">No mês</dt>
+            <dd className={cx("font-semibold", cor(resultado))}>
+              {resultado > 0 ? "+" : ""}
+              {moeda(resultado)}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div
+        className="relative cursor-crosshair touch-pan-y select-none"
+        onPointerMove={(e) => setAtivo(mesSob(e))}
+        onPointerDown={() => (antesDoToque.current = ativo)}
+        onPointerUp={tocar}
+        onPointerLeave={(e) => e.pointerType === "mouse" && setAtivo(null)}
+        tabIndex={0}
+        role="slider"
+        aria-label="Saldo acumulado por mês"
+        aria-valuemin={0}
+        aria-valuemax={meses.length - 1}
+        aria-valuenow={foco}
+        aria-valuetext={`${rotuloMes(mes.m)}: saldo ${moeda(pontos[foco])}`}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            setAtivo(Math.min(meses.length - 1, Math.max(0, foco + (e.key === "ArrowRight" ? 1 : -1))));
+          } else if (e.key === "Enter") aoEscolher(mes.m);
+          else if (e.key === "Escape") setAtivo(null);
+        }}
+        onBlur={() => setAtivo(null)}
+      >
+        <svg viewBox={`0 0 ${L} ${A}`} className="w-full overflow-visible" aria-hidden>
+          <defs>
+            <linearGradient id="saldo-area" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#0027CA" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#0027CA" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {grade.map((v) => (
+            <g key={v}>
+              <line x1={ME} x2={L - MD} y1={Y(v)} y2={Y(v)} stroke="var(--borda)" strokeDasharray={v === 0 ? undefined : "3 4"} strokeWidth={v === 0 ? 1.5 : 1} />
+              <text x={ME - 8} y={Y(v)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="var(--suave)">
+                {curto(v)}
+              </text>
+            </g>
+          ))}
+          {meses.map((x, i) =>
+            i === 0 || i === meses.length - 1 || x.m.endsWith("-01") || meses.length <= 12 ? (
+              <text key={x.m} x={X(i)} y={A - 6} textAnchor="middle" fontSize="11" fill="var(--suave)">
+                {rotuloMes(x.m)}
+              </text>
+            ) : null,
+          )}
+          <g key={chave}>
+            <polygon points={`${X(0)},${Y(0)} ${linha} ${X(pontos.length - 1)},${Y(0)}`} fill="url(#saldo-area)">
+              <animate attributeName="opacity" from="0" to="1" dur="0.6s" fill="freeze" />
+            </polygon>
+            <polyline
+              points={linha}
+              fill="none"
+              stroke="#0027CA"
+              strokeWidth="2.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              pathLength={1}
+              strokeDasharray="1"
+              className="dark:stroke-[#6F8BFF]"
+            >
+              <animate attributeName="stroke-dashoffset" from="1" to="0" dur="0.8s" fill="freeze" calcMode="spline" keySplines="0.2 0.8 0.2 1" keyTimes="0;1" />
+            </polyline>
+          </g>
+          {/* Maior e menor saldo */}
+          {[iMaior, iMenor].filter((v, i, a) => a.indexOf(v) === i && meses.length > 2).map((i) => (
+            <g key={`marco-${i}`}>
+              <circle cx={X(i)} cy={Y(pontos[i])} r="4" fill="var(--superficie)" stroke={pontos[i] < 0 ? "#dc2626" : "#0027CA"} strokeWidth="2" />
+              <text
+                x={X(i)}
+                y={Y(pontos[i]) + (i === iMaior || Y(pontos[i]) + 18 > A - MB - 4 ? -10 : 18)}
+                textAnchor={i === 0 ? "start" : i === meses.length - 1 ? "end" : "middle"}
+                fontSize="11"
+                fontWeight="600"
+                fill="var(--suave)"
+              >
+                {i === iMaior ? "maior" : "menor"}
+              </text>
+            </g>
+          ))}
+          {selecionado && indice >= 0 && ativo === null && (
+            <rect x={X(indice) - 10} y={MT} width="20" height={A - MT - MB} rx="6" fill="#0027CA" opacity="0.06" />
+          )}
+          {/* Guia do mês em foco */}
+          {(ativo !== null || selecionado) && (
+            <g>
+              <line x1={X(foco)} x2={X(foco)} y1={MT} y2={A - MB} stroke="var(--suave)" strokeOpacity="0.5" strokeDasharray="2 3" />
+              <circle cx={X(foco)} cy={Y(pontos[foco])} r="9" fill={pontos[foco] < 0 ? "#dc2626" : "#0027CA"} opacity="0.15" />
+              <circle cx={X(foco)} cy={Y(pontos[foco])} r="5" fill={pontos[foco] < 0 ? "#dc2626" : "#0027CA"} stroke="var(--superficie)" strokeWidth="2" />
+            </g>
+          )}
+        </svg>
+        {/* Balão do mês sob o mouse/dedo */}
+        {ativo !== null && (
+          <div
+            className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 rounded-xl border border-borda bg-superficie px-3 py-2 text-xs shadow-lg whitespace-nowrap"
+            style={{ left: `clamp(70px, ${(X(ativo) / L) * 100}%, calc(100% - 70px))` }}
+          >
+            <p className="font-semibold">{rotuloMes(meses[ativo].m)}</p>
+            <p className={cx("font-display text-sm font-bold tabular-nums", cor(pontos[ativo]))}>{moeda(pontos[ativo])}</p>
+            <p className="text-suave">Toque para filtrar</p>
+          </div>
+        )}
+      </div>
       <p className="mt-2 text-xs text-suave">
-        Saldo final <span className={cx("font-semibold", final < 0 ? "text-red-700 dark:text-red-400" : "text-texto")}>{moeda(final)}</span>
+        Maior saldo em {rotuloMes(meses[iMaior].m)} ({moeda(pontos[iMaior])}) · menor em {rotuloMes(meses[iMenor].m)} ({moeda(pontos[iMenor])})
       </p>
     </div>
   );
