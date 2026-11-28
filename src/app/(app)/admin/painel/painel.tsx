@@ -3,7 +3,6 @@
 import { ArrowDownUp, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useActionState, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { BotaoEnviar } from "@/components/botao-enviar";
-import { MenuSelecao } from "@/components/menu-selecao";
 import { Aviso, Botao, Campo, Entrada, Selecao, cx } from "@/components/ui";
 import { excluirLancamento, salvarLancamento } from "./actions";
 
@@ -164,22 +163,18 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
         </Botao>
       </div>
 
-      {/* Ano: troca o painel inteiro (totais, gráficos, conferência e lançamentos). */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-suave" aria-hidden>
-          Ano
-        </span>
-        <MenuSelecao
-          rotulo="Ano"
-          valor={f.ano}
-          opcoes={[{ valor: "", rotulo: "Tudo" }, ...anos.map((a) => ({ valor: a, rotulo: a }))]}
-          aoMudar={(ano) => alterar({ ano, mes: ano && !f.mes.startsWith(ano) ? "" : f.mes })}
-          className="w-40"
-        />
-      </div>
-
-      {/* Filtros */}
+      {/* Filtros. O ano troca o painel inteiro (totais, gráficos, conferência e lançamentos). */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <Selecao
+          aria-label="Ano"
+          value={f.ano}
+          onChange={(e) => alterar({ ano: e.target.value, mes: e.target.value && !f.mes.startsWith(e.target.value) ? "" : f.mes })}
+        >
+          <option value="">Todos os anos</option>
+          {anos.map((a) => (
+            <option key={a}>{a}</option>
+          ))}
+        </Selecao>
         <Selecao aria-label="Origem" value={f.origem} onChange={(e) => alterar({ origem: e.target.value })}>
           <option value="">Todas as origens</option>
           {unicos((l) => l.origem).map((o) => (
@@ -202,12 +197,17 @@ export function Painel({ lancamentos, socios }: { lancamentos: Lancamento[]; soc
               </option>
             ))}
         </Selecao>
-        <Selecao aria-label="Entradas ou saídas" value={f.direcao} onChange={(e) => alterar({ direcao: e.target.value as Filtros["direcao"] })}>
+        <Selecao
+          aria-label="Entradas ou saídas"
+          value={f.direcao}
+          onChange={(e) => alterar({ direcao: e.target.value as Filtros["direcao"] })}
+          className="max-sm:col-span-2"
+        >
           <option value="">Entradas e saídas</option>
           <option value="entrada">Só entradas</option>
           <option value="saida">Só saídas</option>
         </Selecao>
-        <label className="relative col-span-2 sm:col-span-1">
+        <label className="relative col-span-2 sm:col-span-1 lg:col-span-5">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-suave" aria-hidden />
           <Entrada
             aria-label="Buscar"
